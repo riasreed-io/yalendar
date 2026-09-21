@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}{{ day }} · Yalendar{% endblock %}
+{% block content %}
+<div class="layout">
+  <aside class="filters">
+    <input type="checkbox" id="show-filters" class="filter-toggle">
+    <label for="show-filters" class="filter-toggle-label">Date &amp; search</label>
+    <div class="filter-panel">
+    <form method="get" action="/">
+      <div class="date-nav">
+        <a class="ghost" href="{{ href(day=prev_day) }}">‹</a>
+        <label>
+          <span>Date</span>
+          <input type="date" name="day" value="{{ day }}" onchange="this.form.submit()">
+        </label>
+        <a class="ghost" href="{{ href(day=next_day) }}">›</a>
+      </div>
+      <a class="today-link" href="{{ href(day=today) }}">Jump to today</a>
+      {% include "_mini_month.html" %}
+
+      <label>Search
+        <input type="search" name="q" value="{{ q }}" placeholder="Talk, club, place…">
+      </label>
+
+      <label>Organization
+        <select name="org" onchange="this.form.submit()">
+          <option value="">All organizations</option>
+          {% for name in facets.orgs %}
+          <option value="{{ name }}" {% if org == name %}selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>Sort
+        <select name="sort" onchange="this.form.submit()">
+          {% for value, label in sorts %}
+          <option value="{{ value }}" {% if sort == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>Group list by
+        <select name="group" onchange="this.form.submit()">
+          {% for value, label in groupings %}
+          <option value="{{ value }}" {% if group == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      {% include "_filter_hiddens.html" %}
+      <div class="filter-actions">
+        <button type="submit">Apply</button>
+        <a class="ghost" href="/?day={{ day }}">Clear filters</a>
+      </div>
+    </form>
+    </div>
+    <p class="hint">Day list. Use Month for the grid. Gold = Campus Groups (SOM), separate from Yale Connect. Signing in loads about one month of public Yale, Connect, Campus Groups, and New Haven events — not your NetID password.</p>
+  </aside>
+
+  <section class="feed">
+    <div class="meta-row">
+      <div>
+        <h1>{{ day }}</h1>
+        <p>
+          {% if count != total %}{{ count }} of {{ total }}{% else %}{{ total }}{% endif %}
+          event{% if total != 1 %}s{% endif %}
+        </p>
+      </div>
+      <form method="post" action="/refresh?day={{ day }}&next=day">
+        <button class="ghost" type="submit">Refresh one month</button>
+      </form>
+    </div>
+
+    {% if notice == 'refreshed' %}
+    <p class="banner">Loaded the next month of public Yale, Yale Connect, Campus Groups, and New Haven events.</p>
+    {% elif notice == 'refreshing' %}
+    <p class="banner">Signing in loads the next month of public Yale, Yale Connect, Campus Groups, and New Haven events. That pull is running now.</p>
+    {% elif notice == 'refresh-partial' %}
+    <p class="banner warn">Updated what we could. Existing events are still shown.</p>
+    {% elif notice == 'refresh-failed' %}
+    <p class="banner warn">Could not reach campus calendars. Saved events are still here.</p>
+    {% endif %}
+
+    {% include "_chips.html" %}
+
+    {% if not groups or not count %}
+      <p class="empty">No events match these filters. Clear filters or pick another day.</p>
+    {% else %}
+      {% for block in groups %}
+      <section class="cat-block" id="{{ block.slug }}">
+        <h2 class="cat-head">{{ block.label }} <span>{{ block.count }}</span></h2>
+        <ol class="events">
+          {% for event in block.events %}
+          <li class="event ch-{{ event.channel }}">
+            <div class="when">{{ event.start|when(event.all_day) }}</div>
+            <div class="body">
+              {% include "_event_expand.html" %}
+              <p class="pills">
+                <span class="pill ch-{{ event.channel }}">{{ event.channel_label }}</span>
+                <span class="pill">{{ event.dept_label }}</span>
+                <span class="pill">{{ event.category_label }}</span>
+              </p>
+              <p class="sub">
+                {{ event.org }}
+                {% if event.location %} · {{ event.location }}{% endif %}
+              </p>
+              {% if event.also_listed %}
+              <p class="also">Also on {{ event.also_listed|join(', ') }}</p>
+              {% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ol>
+      </section>
+      {% endfor %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

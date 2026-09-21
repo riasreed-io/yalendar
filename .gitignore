@@ -1,0 +1,16 @@
+.venv/
+.tools/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.playwright/
+.env
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/dashboard_password.txt
+data/connect_feeds.json
+data/connect_login_status.json
+data/extra_ics.txt
+*.ics
+.DS_Store

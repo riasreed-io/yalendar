@@ -1,0 +1,47 @@
+<div class="class-block time-filter">
+  <p class="class-label">Time</p>
+  <div class="time-toolbar">
+    <a class="chip {% if all_times %}on{% endif %}" href="{{ href(after='all') }}" aria-pressed="{{ 'true' if all_times else 'false' }}">All times</a>
+    <span class="time-readout" id="time-readout">{% if all_times %}Showing the whole day{% else %}From {{ after_label }}{% endif %}</span>
+  </div>
+  <div class="time-slider {% if all_times %}dim{% endif %}" data-template="{{ href(after='CLOCK') }}">
+    <div class="time-bubble" id="time-bubble" hidden></div>
+    <input type="range" min="0" max="{{ time_max }}" step="1" value="{{ after_step }}" aria-label="Show events starting after this time" oninput="yalendarTimePreview(this)" onchange="yalendarTimeGo(this)">
+    <div class="time-ticks">
+      {% for mark in time_marks %}
+      <a href="{{ href(after=mark.value) }}" class="{% if after == mark.value %}on{% endif %}" style="left: {{ mark.pct }}%">{{ mark.label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="class-block">
+  <p class="class-label">Source</p>
+  <nav class="cats" aria-label="Source">
+    <a class="chip {% if not channel %}on{% endif %}" href="{{ href(channel=[]) }}">All</a>
+    {% for item in facets.channels %}
+    <a class="chip ch-{{ item.slug }} {% if item.slug in channel %}on{% endif %}" href="{{ toggle('channel', item.slug) }}" aria-pressed="{{ 'true' if item.slug in channel else 'false' }}">{{ item.label }} <em>{{ item.count }}</em></a>
+    {% endfor %}
+  </nav>
+</div>
+
+<div class="class-block">
+  <p class="class-label">School / department</p>
+  <nav class="cats" aria-label="School or department">
+    <a class="chip {% if not dept %}on{% endif %}" href="{{ href(dept=[]) }}">All</a>
+    {% for item in facets.departments %}
+    <a class="chip {% if item.slug in dept %}on{% endif %}" href="{{ toggle('dept', item.slug) }}" aria-pressed="{{ 'true' if item.slug in dept else 'false' }}">{{ item.label }} <em>{{ item.count }}</em></a>
+    {% endfor %}
+  </nav>
+</div>
+
+<div class="class-block">
+  <p class="class-label">Topic / interest</p>
+  <nav class="cats" aria-label="Topic">
+    <a class="chip {% if not cat %}on{% endif %}" href="{{ href(cat=[]) }}">All</a>
+    {% for item in facets.categories %}
+    <a class="chip {% if item.slug in cat %}on{% endif %}" href="{{ toggle('cat', item.slug) }}" aria-pressed="{{ 'true' if item.slug in cat else 'false' }}">{{ item.label }} <em>{{ item.count }}</em></a>
+    {% endfor %}
+  </nav>
+</div>
+<p class="chip-hint">Select any mix of sources, schools, and topics. The slider moves in one-hour steps. All times shows the full day. Filters combine across rows.</p>

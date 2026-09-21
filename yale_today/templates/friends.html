@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Friends · Yalendar{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Share</h1>
+  <p>Friends sign in with an <strong>invite code</strong> only — no Yale email. The shared code is:</p>
+  <p><code>{{ shared }}</code></p>
+  <p>Login link: <a href="{{ login_url }}">{{ login_url }}</a></p>
+</section>
+{% endblock %}

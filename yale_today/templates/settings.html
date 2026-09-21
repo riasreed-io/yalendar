@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Feeds · Yalendar{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Private calendar feeds</h1>
+  <p>Public Yale Events, Yale Connect, Campus Groups (SOM), athletics, and New Haven calendars update when someone signs in or hits Refresh (next two weeks). For events only you can see after Duo:</p>
+  <ol>
+    <li>Sign into <a href="https://yaleconnect.yale.edu" rel="noopener" target="_blank">Yale Connect</a> or <a href="https://groups.som.yale.edu" rel="noopener" target="_blank">Campus Groups</a> in your own browser.</li>
+    <li>Open the calendar or event list and copy the ICS / iCal feed URL (often under settings or “subscribe”).</li>
+    <li>Paste those URLs below, one per line. Do not paste your NetID password.</li>
+  </ol>
+  <form method="post" action="/settings">
+    <textarea name="urls" rows="10" placeholder="https://yaleconnect.yale.edu/ical/...">{{ urls }}</textarea>
+    <button type="submit">Save feeds</button>
+  </form>
+</section>
+{% endblock %}

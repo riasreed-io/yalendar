@@ -1,0 +1,26 @@
+{
+  "fetched_at": "2026-09-09",
+  "sources": [
+    {
+      "id": "localist",
+      "name": "Yale University Events (Localist)",
+      "endpoint": "https://events.yale.edu/api/2/events",
+      "auth": "none",
+      "notes": "JSON with event_instances start/end, groups, tags, localist_url. Sample day had live exhibitions and talks."
+    },
+    {
+      "id": "yale_connect",
+      "name": "Yale Connect / CampusGroups",
+      "endpoint": "https://yaleconnect.yale.edu/mobile_ws/v17/mobile_events_list",
+      "auth": "public list works without login; CAS via local NetID PDF for ICS capture",
+      "notes": "Positional p0.. fields mapped from the fields string. Login credentials are read only from ~/Downloads/Yale Calendar/Yale Net ID Info.pdf and never stored in this repo."
+    },
+    {
+      "id": "athletics",
+      "name": "Yale Athletics",
+      "endpoint": "https://yalebulldogs.com/calendar.ashx/calendar.ics",
+      "auth": "none",
+      "notes": "ICS feed."
+    }
+  ]
+}

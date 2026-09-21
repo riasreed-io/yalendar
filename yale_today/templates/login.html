@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Yalendar{% endblock %}
+{% block content %}
+<section class="card login">
+  <p class="yale-mark">Yale</p>
+  <h1>Today</h1>
+  <p>This calendar is a stored snapshot of campus events (public Yale, Yale Connect, Campus Groups, and New Haven). Enter the <strong>invite code</strong> you were given. There is no Yale email or NetID sign-in on this page.</p>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <form method="post" action="/login">
+    <label for="invite">Invite code
+      <input id="invite" type="text" name="invite" value="{{ invite or '' }}" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Invite code">
+    </label>
+    <button type="submit">Open calendar</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+<div class="event-head">
+  <h3>
+    {% if event.url %}
+    <a href="{{ event.url }}" rel="noopener" target="_blank">{{ event.title }}</a>
+    {% else %}
+    {{ event.title }}
+    {% endif %}
+  </h3>
+  <details class="expand">
+    <summary aria-label="Show description"><span class="drop" aria-hidden="true"></span></summary>
+    <div class="expand-body">
+      {% if event.description %}
+      <p class="desc">{{ event.description }}</p>
+      {% else %}
+      <p class="desc muted">No description was listed for this event.</p>
+      {% endif %}
+      {% if event.tags %}
+      <p class="sub">{{ event.tags }}</p>
+      {% endif %}
+    </div>
+  </details>
+</div>

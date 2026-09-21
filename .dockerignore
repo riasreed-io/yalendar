@@ -1,0 +1,10 @@
+.venv
+.git
+__pycache__
+*.pyc
+data/dashboard_password.txt
+data/connect_feeds.json
+data/connect_login_status.json
+data/*.db-shm
+data/*.db-wal
+.DS_Store

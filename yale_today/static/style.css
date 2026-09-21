@@ -1,0 +1,645 @@
+:root {
+  --yale-blue: #00356b;
+  --yale-mid: #286dc0;
+  --yale-light: #63aaff;
+  --yale-gold: #bd9b60;
+  --yale-sand: #f4efe4;
+  --yale-ink: #222222;
+  --muted: #5b6770;
+  --card: #ffffff;
+  --line: #d9d1c3;
+  --sans: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --serif: "Source Serif 4", "Iowan Old Style", Palatino, serif;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+body {
+  margin: 0;
+  background: var(--yale-sand);
+  color: var(--yale-ink);
+  font-family: var(--sans);
+}
+a { color: var(--yale-mid); }
+.top {
+  background: var(--yale-blue);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.75rem;
+  gap: 1rem;
+  width: 100%;
+  border-bottom: 4px solid var(--yale-gold);
+}
+.yale-mark {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: var(--yale-gold);
+}
+.brand a {
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--serif);
+  font-size: 1.85rem;
+  font-weight: 600;
+  margin-left: 0.15rem;
+}
+.brand p { margin: 0.2rem 0 0; color: #c5d4e8; font-size: 0.92rem; }
+nav { display: flex; gap: 1rem; align-items: center; }
+nav a { color: #fff; text-decoration: none; font-weight: 600; }
+nav a:hover { color: var(--yale-gold); }
+nav form { margin: 0; }
+button {
+  font-family: var(--sans);
+  font-weight: 600;
+  background: var(--yale-gold);
+  color: var(--yale-blue);
+  border: 0;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+.ghost {
+  background: transparent;
+  color: var(--yale-blue);
+  border: 1px solid var(--line);
+  padding: 0.35rem 0.7rem;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: 600;
+}
+nav button { background: #fff; color: var(--yale-blue); }
+main { max-width: 1400px; margin: 0 auto; padding: 1.25rem; }
+.layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.feed { min-width: 0; }
+.filter-toggle {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.filter-toggle-label { display: none; }
+.filters {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 1rem;
+  position: sticky;
+  top: 0.75rem;
+}
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--yale-blue);
+  margin: 0.75rem 0;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.date-nav {
+  display: grid;
+  grid-template-columns: 2rem 1fr 2rem;
+  gap: 0.35rem;
+  align-items: end;
+}
+.date-nav .ghost { text-align: center; padding: 0.45rem 0; }
+.today-link { font-size: 0.9rem; }
+.mini-cal {
+  display: block;
+  margin: 0.85rem 0 0.4rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.4rem 0.55rem;
+  overflow: hidden;
+}
+.mini-cal-nav {
+  display: grid;
+  grid-template-columns: 2rem 1fr 2rem;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+.mini-cal-nav span {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--yale-blue);
+}
+.mini-cal-nav .ghost { text-align: center; padding: 0.2rem 0; }
+.mini-weekdays, .mini-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.12rem;
+}
+.mini-weekdays span {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.mini-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--yale-blue);
+  text-decoration: none;
+  border-radius: 4px;
+}
+.mini-day.out { color: #a39a8c; font-weight: 400; }
+.mini-day.today {
+  box-shadow: inset 0 0 0 2px var(--yale-mid);
+}
+.mini-day.selected,
+.mini-day.in-week,
+.month-cell.today,
+.month-cell.selected,
+.week-col.today {
+  background: #d4e6f7;
+}
+.mini-day.selected,
+.mini-day.in-week {
+  color: var(--yale-blue);
+  font-weight: 700;
+}
+.month-cell.today,
+.month-cell.selected {
+  outline: 2px solid var(--yale-mid);
+  outline-offset: -2px;
+}
+.filter-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+.hint { font-size: 0.8rem; color: var(--muted); line-height: 1.4; margin: 1rem 0 0; }
+.card {
+  background: var(--card);
+  padding: 1.35rem;
+  border: 1px solid var(--line);
+}
+.card h2 { font-size: 1.15rem; color: var(--yale-blue); margin: 1.25rem 0 0.4rem; }
+.card ol, .card ul { color: var(--yale-ink); line-height: 1.45; }
+.card code { font-size: 0.92rem; }
+.login { max-width: 420px; margin: 4rem auto; }
+.login.wide { max-width: 560px; }
+.disclose {
+  background: #e8f1fb;
+  border: 1px solid var(--line);
+  padding: 0.75rem 0.9rem;
+  margin: 0 0 1rem;
+  color: var(--yale-ink);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.disclose ul { margin: 0.4rem 0; padding-left: 1.2rem; }
+.login h1 {
+  font-family: var(--serif);
+  font-size: 2.4rem;
+  margin: 0.2rem 0 0.6rem;
+  color: var(--yale-blue);
+}
+input, select, textarea {
+  font: inherit;
+  text-transform: none;
+  font-weight: 400;
+  padding: 0.5rem 0.55rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--yale-ink);
+}
+.feed h1 {
+  font-family: var(--serif);
+  color: var(--yale-blue);
+  margin: 0;
+  font-size: 1.8rem;
+}
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.meta-row p { margin: 0.2rem 0 0; color: var(--muted); }
+.events { list-style: none; padding: 0; margin: 0; }
+.event {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--yale-blue);
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.55rem;
+}
+.event.ch-yale_connect { border-left-color: #286dc0; }
+.event.ch-campus_groups { border-left-color: var(--yale-gold); }
+.event.ch-community { border-left-color: #3d7a55; }
+.event.ch-public { border-left-color: #8a6d3b; }
+.when {
+  font-variant-numeric: tabular-nums;
+  color: var(--yale-blue);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.event-head {
+  position: relative;
+  padding-right: 2.6rem;
+  margin: 0 0 0.25rem;
+}
+.event-head h3 {
+  margin: 0;
+  font-size: 1.12rem;
+  font-family: var(--serif);
+  font-weight: 600;
+}
+.event-head h3 a { color: var(--yale-blue); text-decoration: none; }
+.event-head h3 a:hover { color: var(--yale-mid); }
+.expand { margin: 0; }
+.expand summary {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+}
+.expand summary::-webkit-details-marker { display: none; }
+.drop {
+  display: block;
+  width: 1.85rem;
+  height: 1.85rem;
+  line-height: 1.7rem;
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--yale-blue);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.drop::before { content: "▾"; }
+.expand[open] .drop::before { content: "▴"; }
+.expand-body {
+  margin: 0.5rem 0 0.15rem;
+  padding: 0.55rem 0.65rem;
+  background: #eef5fb;
+  border: 1px solid #c5d4e8;
+}
+.desc {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  max-height: 14rem;
+  overflow: auto;
+}
+.desc.muted { color: var(--muted); }
+.month-event {
+  position: relative;
+  padding-right: 1.7rem;
+}
+.month-event > a {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.month-event .expand summary,
+.month-event .drop {
+  width: 1.5rem;
+  height: 1.5rem;
+  line-height: 1.35rem;
+  font-size: 1.15rem;
+}
+.week-item .event-head { padding-right: 2rem; }
+.week-item .event-head h3 { font-size: 0.82rem; font-family: var(--sans); }
+.week-item .expand summary,
+.week-item .drop {
+  width: 1.55rem;
+  height: 1.55rem;
+  line-height: 1.4rem;
+  font-size: 1.2rem;
+}
+.class-block { margin: 0 0 0.85rem; }
+.class-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--yale-blue);
+}
+.cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.35rem;
+}
+.chip {
+  background: #fff;
+  color: var(--yale-blue);
+  border: 1px solid var(--line);
+  padding: 0.32rem 0.6rem;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.chip.ch-yale_connect { border-color: #286dc0; background: #e8f1fb; }
+.chip.ch-campus_groups { border-color: var(--yale-gold); background: #f7f0e2; }
+.chip.ch-public { border-color: #8a6d3b; background: #f8f1e4; }
+.chip.ch-community { border-color: #3d7a55; background: #e8f4eb; }
+.chip em { font-style: normal; color: var(--muted); font-weight: 400; }
+.chip.on {
+  background: var(--yale-blue);
+  color: #fff;
+  border-color: var(--yale-blue);
+}
+.chip.on em { color: #c5d4e8; }
+.chip-hint {
+  margin: 0 0 1rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.time-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.45rem;
+}
+.time-readout {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.time-slider {
+  position: relative;
+  max-width: 40rem;
+  margin: 0.9rem 0 0.25rem;
+  padding-top: 1.35rem;
+}
+.time-slider.dim { opacity: 0.55; }
+.time-bubble {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  background: var(--yale-blue);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.12rem 0.45rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.time-slider input[type="range"] {
+  width: 100%;
+  margin: 0.15rem 0 0.55rem;
+  accent-color: var(--yale-blue);
+}
+.time-ticks {
+  position: relative;
+  height: 1.35rem;
+}
+.time-ticks a {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  color: var(--yale-blue);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.time-ticks a:first-child { transform: none; }
+.time-ticks a:last-child { transform: translateX(-100%); }
+.time-ticks a.on {
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+.cat-head {
+  font-size: 1.05rem;
+  margin: 1.3rem 0 0.5rem;
+  color: var(--yale-blue);
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--yale-gold);
+  padding-bottom: 0.25rem;
+}
+.cat-head span { color: var(--muted); font-weight: 400; }
+.sub, .also { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.92rem; }
+.pills { margin: 0 0 0.25rem; }
+.pill {
+  display: inline-block;
+  background: #e7eef7;
+  color: var(--yale-blue);
+  padding: 0.08rem 0.42rem;
+  margin: 0 0.3rem 0.2rem 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.pill.ch-public { background: #f3e6d2; color: #6b4f1d; }
+.pill.ch-yale_connect { background: #d7e6f8; color: var(--yale-blue); }
+.pill.ch-campus_groups { background: #ead9b2; color: #5c4314; }
+.pill.ch-community { background: #e4f0e6; color: #1e4d32; }
+.error { color: #8b1e3f; }
+.banner {
+  background: #d7e6f8;
+  color: var(--yale-blue);
+  padding: 0.65rem 0.85rem;
+  margin: 0 0 1rem;
+}
+.banner.warn { background: #f3e6d2; }
+.empty { color: var(--muted); }
+textarea { width: 100%; }
+.month-grid { border: 1px solid var(--line); background: var(--card); }
+.month-weekdays, .month-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.month-weekdays div {
+  padding: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--yale-blue);
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+.month-cell {
+  display: block;
+  min-height: 8.5rem;
+  padding: 0.4rem;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  overflow: hidden;
+}
+.month-cell.out { background: #f4efe4; opacity: 0.65; }
+.month-num {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  color: var(--yale-blue);
+  font-size: 0.88rem;
+}
+.month-num em { font-style: normal; color: var(--muted); font-weight: 400; }
+.month-cell ul { list-style: none; margin: 0.35rem 0 0; padding: 0; }
+.month-cell li {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  margin: 0 0 0.25rem;
+  padding-left: 0.35rem;
+  border-left: 3px solid var(--yale-blue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.month-cell li.ch-yale_connect { border-left-color: #286dc0; }
+.month-cell li.ch-campus_groups { border-left-color: var(--yale-gold); }
+.month-cell li.ch-community { border-left-color: #3d7a55; }
+.month-cell li.ch-public { border-left-color: #8a6d3b; }
+.month-cell li.more { border-left-color: transparent; color: var(--muted); }
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(160px, 1fr));
+  gap: 0.45rem;
+  align-items: start;
+  overflow-x: auto;
+}
+.week-col {
+  background: var(--card);
+  border: 1px solid var(--line);
+  min-height: 18rem;
+  min-width: 160px;
+}
+.week-col ol,
+.week-col li { list-style: none; }
+.week-col.today { outline: 2px solid var(--yale-mid); outline-offset: -2px; }
+.week-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.55rem 0.55rem 0.4rem;
+  border-bottom: 2px solid var(--yale-gold);
+  text-decoration: none;
+  color: var(--yale-blue);
+}
+.week-head span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.week-head em { font-style: normal; color: var(--muted); font-size: 0.8rem; }
+.week-col ol { list-style: none; margin: 0; padding: 0.4rem; }
+.week-item {
+  margin: 0 0 0.45rem;
+  padding-left: 0.4rem;
+  border-left: 3px solid var(--yale-blue);
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+.week-item.ch-yale_connect { border-left-color: #286dc0; }
+.week-item.ch-campus_groups { border-left-color: var(--yale-gold); }
+.week-item.ch-community { border-left-color: #3d7a55; }
+.week-item.ch-public { border-left-color: #8a6d3b; }
+.week-item a { color: var(--yale-blue); text-decoration: none; font-weight: 600; }
+.week-item .when { display: block; font-weight: 700; font-size: 0.72rem; }
+.week-item .sub { display: block; color: var(--muted); font-size: 0.72rem; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 0.65rem; }
+  .filters {
+    position: static;
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+  .filters .filter-toggle-label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.2rem 0 0.45rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--yale-blue);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  .filters .filter-toggle-label::after {
+    content: "▾";
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .filter-toggle:checked + .filter-toggle-label::after { content: "▴"; }
+  .filter-panel,
+  .filters > .hint { display: none; }
+  .filter-toggle:checked ~ .filter-panel {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 0.75rem;
+    margin-bottom: 0.35rem;
+  }
+  .event { grid-template-columns: 1fr; padding: 0.75rem; }
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: max(0.75rem, env(safe-area-inset-top)) 0.9rem 0.75rem;
+    gap: 0.65rem;
+  }
+  .brand p { display: none; }
+  .brand a { font-size: 1.45rem; }
+  nav { width: 100%; flex-wrap: wrap; gap: 0.75rem; }
+  main {
+    padding: 0.75rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .feed h1 { font-size: 1.35rem; }
+  .meta-row { flex-direction: column; align-items: stretch; }
+  input, select, textarea { font-size: 16px; max-width: 100%; }
+  .chip { font-size: 0.8rem; padding: 0.28rem 0.5rem; }
+  .month-grid { width: 100%; }
+  .month-weekdays div { font-size: 0.62rem; padding: 0.25rem 0; }
+  .month-cell { min-height: 4.2rem; padding: 0.22rem; }
+  .month-num { font-size: 0.78rem; }
+  .month-cell li { font-size: 0.62rem; }
+  .month-event { padding-right: 1.35rem; }
+  .week-grid {
+    grid-template-columns: 1fr;
+    overflow-x: hidden;
+  }
+  .week-col { min-width: 0; }
+}

@@ -1,0 +1,10 @@
+{% for item in channel %}
+<input type="hidden" name="channel" value="{{ item }}">
+{% endfor %}
+{% for item in dept %}
+<input type="hidden" name="dept" value="{{ item }}">
+{% endfor %}
+{% for item in cat %}
+<input type="hidden" name="cat" value="{{ item }}">
+{% endfor %}
+<input type="hidden" name="after" value="{{ after }}">

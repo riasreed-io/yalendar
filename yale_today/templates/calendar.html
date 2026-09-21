@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ month_label }} · Yalendar{% endblock %}
+{% block content %}
+<div class="layout">
+  <aside class="filters">
+    <input type="checkbox" id="show-filters" class="filter-toggle">
+    <label for="show-filters" class="filter-toggle-label">Date &amp; search</label>
+    <div class="filter-panel">
+    <form method="get" action="/calendar">
+      <div class="date-nav">
+        <a class="ghost" href="{{ href(month=prev_month) }}">‹</a>
+        <label>
+          <span>Month</span>
+          <input type="month" name="month" value="{{ month }}" onchange="this.form.submit()">
+        </label>
+        <a class="ghost" href="{{ href(month=next_month) }}">›</a>
+      </div>
+      <label>Search
+        <input type="search" name="q" value="{{ q }}" placeholder="Talk, club, place…">
+      </label>
+      <label>Organization
+        <select name="org" onchange="this.form.submit()">
+          <option value="">All organizations</option>
+          {% for name in facets.orgs %}
+          <option value="{{ name }}" {% if org == name %}selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      {% include "_filter_hiddens.html" %}
+      <div class="filter-actions">
+        <button type="submit">Apply</button>
+        <a class="ghost" href="/calendar?month={{ month }}">Clear filters</a>
+      </div>
+    </form>
+    </div>
+    <p class="hint">Month grid of the next-month snapshot. Gold = Campus Groups (SOM). Blue = Yale Connect. Tan = public Yale. Green = New Haven. Filters include SOM, YSE, Jackson, and other schools even when a count is zero.</p>
+  </aside>
+
+  <section class="feed calendar-wrap">
+    <div class="meta-row">
+      <div>
+        <h1>{{ month_label }}</h1>
+        <p>
+          {% if count != total %}{{ count }} of {{ total }}{% else %}{{ total }}{% endif %}
+          event{% if total != 1 %}s{% endif %} this month
+        </p>
+      </div>
+      <form method="post" action="/refresh?month={{ month }}&next=calendar">
+        <button class="ghost" type="submit">Refresh one month</button>
+      </form>
+    </div>
+
+    {% if notice == 'refreshed' %}
+    <p class="banner">Loaded the next month of public Yale, Yale Connect, Campus Groups, and New Haven events.</p>
+    {% elif notice == 'refreshing' %}
+    <p class="banner">Signing you in loads the next month of public Yale, Yale Connect, Campus Groups, and New Haven events. That pull is running now.</p>
+    {% elif notice == 'refresh-partial' %}
+    <p class="banner warn">Updated what we could. Existing events are still shown.</p>
+    {% elif notice == 'refresh-failed' %}
+    <p class="banner warn">Could not reach campus calendars. Saved events are still here.</p>
+    {% endif %}
+
+    {% include "_chips.html" %}
+
+    <div class="month-grid" role="grid" aria-label="{{ month_label }}">
+      <div class="month-weekdays">
+        {% for label in weekday_labels %}
+        <div>{{ label }}</div>
+        {% endfor %}
+      </div>
+      {% for week in weeks %}
+      <div class="month-week">
+        {% for cell in week %}
+        <div class="month-cell {% if not cell.in_month %}out{% endif %} {% if cell.today %}today selected{% endif %}">
+          <a class="month-num" href="/?day={{ cell.date }}">{{ cell.num }} <em>{{ cell.count }}</em></a>
+          <ul>
+            {% for event in cell.events %}
+            <li class="ch-{{ event.channel }}">
+              <div class="month-event">
+                {% if event.url %}
+                <a href="{{ event.url }}" rel="noopener" target="_blank">{{ event.title }}</a>
+                {% else %}
+                {{ event.title }}
+                {% endif %}
+                <details class="expand tight">
+                  <summary aria-label="Show description"><span class="drop" aria-hidden="true"></span></summary>
+                  <div class="expand-body">
+                    {% if event.description %}<p class="desc">{{ event.description }}</p>{% endif %}
+                  </div>
+                </details>
+              </div>
+            </li>
+            {% endfor %}
+            {% if cell.more %}<li class="more"><a href="/?day={{ cell.date }}">+{{ cell.more }} more</a></li>{% endif %}
+          </ul>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

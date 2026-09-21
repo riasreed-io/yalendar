@@ -1,0 +1,19 @@
+<div class="mini-cal" role="navigation" aria-label="Choose a date">
+  <div class="mini-cal-nav">
+    <a class="ghost" href="{{ mini.prev_url }}">‹</a>
+    <span>{{ mini.label }}</span>
+    <a class="ghost" href="{{ mini.next_url }}">›</a>
+  </div>
+  <div class="mini-weekdays">
+    {% for label in mini.weekdays %}
+    <span>{{ label }}</span>
+    {% endfor %}
+  </div>
+  {% for week in mini.weeks %}
+  <div class="mini-week">
+    {% for cell in week %}
+    <a class="mini-day {% if not cell.in_month %}out{% endif %} {% if cell.selected %}selected{% endif %} {% if cell.in_week %}in-week{% endif %} {% if cell.today %}today{% endif %}" href="{{ cell.href }}">{{ cell.num }}</a>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
