@@ -1,0 +1,83 @@
+{#
+  Chat assistant panel. Two modes:
+    dock  - docked beside the calendar (day/week/month views)
+    page  - the standalone /ask page
+  Without JavaScript the form is a plain GET to /ask, which server-renders.
+#}
+{% set mode = chat_mode | default('dock') %}
+<aside class="chat-dock{% if mode == 'page' %} chat-plain{% endif %}" id="chat-dock"
+       aria-label="Ask Yalendar"{% if mode == 'dock' %} data-dock="1"{% endif %}>
+  {% if mode == 'dock' %}
+  <div class="chat-dock-head">
+    <h2>Ask Yalendar</h2>
+    <button type="button" class="chat-close" id="chat-close" aria-label="Close the assistant">&times;</button>
+  </div>
+  {% endif %}
+
+  <div class="chat" id="chat">
+    <div class="bubble bot">
+      <p>{% if mode == 'dock' %}Looking for something? Ask me and I&rsquo;ll search the listings.{% else %}Hi! I can dig through campus listings for you. Try one of these, or type your own.{% endif %}</p>
+    </div>
+    {% if answer %}
+    <div class="bubble me"><p>{{ answer.question }}</p></div>
+    <div class="bubble bot">
+      <p>{{ answer.reply }}</p>
+      {% if answer.events %}
+      <ul class="hits">
+        {% for event in answer.events %}
+        <li>
+          <span class="dot {{ event.channel }}" aria-hidden="true"></span>
+          <div>
+            <p class="hit-when">{{ event.when }}</p>
+            {% if event.url %}
+            <a class="hit-title" href="{{ event.url }}" rel="noopener" target="_blank">{{ event.title }}</a>
+            {% else %}
+            <span class="hit-title">{{ event.title }}</span>
+            {% endif %}
+            <p class="hit-meta">
+              {% if event.org %}{{ event.org }}{% endif %}
+              {% if event.location %} &middot; {{ event.location }}{% endif %}
+            </p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% if answer.more %}<p class="hit-more">and {{ answer.more }} more</p>{% endif %}
+      {% endif %}
+      {% if answer.suggestions %}
+      <div class="chips-inline">
+        {% for idea in answer.suggestions %}
+        <a class="chip" href="/ask?q={{ idea | urlencode }}">{{ idea }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if answer.link and answer.events %}
+      <a class="hit-link" href="{{ answer.link }}">{{ answer.link_label }} &rarr;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="ask-examples" id="ask-examples">
+    {% for idea in (ask_examples[:4] if mode == 'dock' else ask_examples) %}
+    <a class="chip" href="/ask?q={{ idea | urlencode }}">{{ idea }}</a>
+    {% endfor %}
+  </div>
+
+  <form class="ask-form" id="ask-form" action="/ask" method="get" autocomplete="off">
+    <input type="text" id="ask-input" name="q" value="" maxlength="300"
+           placeholder="e.g. free food tomorrow" aria-label="Ask about upcoming events">
+    <button type="submit">Ask</button>
+  </form>
+</aside>
+
+<template id="tpl-hit">
+  <li>
+    <span class="dot" aria-hidden="true"></span>
+    <div>
+      <p class="hit-when"></p>
+      <a class="hit-title" rel="noopener" target="_blank"></a>
+      <p class="hit-meta"></p>
+    </div>
+  </li>
+</template>

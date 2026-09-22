@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ month_label }} · Yalendar{% endblock %}
 {% block content %}
-<div class="layout">
+<div class="layout with-chat">
   <aside class="filters">
     <input type="checkbox" id="show-filters" class="filter-toggle">
     <label for="show-filters" class="filter-toggle-label">Date &amp; search</label>
@@ -99,5 +99,7 @@
       {% endfor %}
     </div>
   </section>
+  {% include "_chat_panel.html" %}
 </div>
+<button type="button" class="chat-launch" id="chat-launch" aria-expanded="false" aria-controls="chat-dock">Ask</button>
 {% endblock %}

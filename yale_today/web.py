@@ -340,6 +340,10 @@ ASK_EXAMPLES = [
 ]
 
 
+# Available to every template, so the docked panel needs no route changes.
+templates.env.globals["ask_examples"] = ASK_EXAMPLES
+
+
 def _ask_payload(question: str) -> dict:
     """Shared by the page and the fetch endpoint so both answer identically."""
     result = assistant.answer(question)
@@ -376,8 +380,6 @@ def ask_page(request: Request, q: str | None = None):
         {
             "question": question,
             "answer": answer,
-            "examples": ASK_EXAMPLES,
-            "today": today_local().isoformat(),
         },
     )
 
