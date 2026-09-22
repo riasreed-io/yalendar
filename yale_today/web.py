@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import db, ingest
+from . import assistant, db, ingest
 from .auth import dashboard_password
 from .config import ROOT, TZINFO, WINDOW_DAYS, SHARED_INVITE, now_local, today_local
 from .dedupe import events_for_day, events_for_range
@@ -328,6 +328,68 @@ def day_view(
             **_time_ctx(after, now),
         },
     )
+
+
+ASK_EXAMPLES = [
+    "free food this week",
+    "what's happening tonight",
+    "talks tomorrow",
+    "concerts this weekend",
+    "SOM events Friday",
+    "career events next week",
+]
+
+
+def _ask_payload(question: str) -> dict:
+    """Shared by the page and the fetch endpoint so both answer identically."""
+    result = assistant.answer(question)
+    return {
+        "question": question,
+        "reply": result.reply,
+        "events": [
+            {
+                "title": event.get("title") or "Untitled event",
+                "when": event.get("when_label") or "",
+                "location": event.get("location") or "",
+                "org": event.get("org") or "",
+                "url": event.get("url") or "",
+                "channel": event.get("channel") or "public",
+                "channel_label": event.get("channel_label") or "",
+            }
+            for event in result.events
+        ],
+        "more": result.more,
+        "link": result.link,
+        "link_label": result.link_label,
+        "suggestions": result.suggestions,
+    }
+
+
+@app.get("/ask", response_class=HTMLResponse)
+def ask_page(request: Request, q: str | None = None):
+    """Chat assistant. Server-renders the first answer so it works without JS."""
+    question = (q or "").strip()
+    answer = _ask_payload(question) if question else None
+    return templates.TemplateResponse(
+        request,
+        "ask.html",
+        {
+            "question": question,
+            "answer": answer,
+            "examples": ASK_EXAMPLES,
+            "today": today_local().isoformat(),
+        },
+    )
+
+
+@app.post("/ask")
+def ask_api(request: Request, q: str = Form("")):
+    question = (q or "").strip()[:300]
+    if not question:
+        return {"reply": "Ask me what you're looking for — a day, a topic, or both.",
+                "events": [], "more": 0, "link": "", "link_label": "",
+                "suggestions": ASK_EXAMPLES[:3]}
+    return _ask_payload(question)
 
 
 @app.get("/friends", response_class=HTMLResponse)

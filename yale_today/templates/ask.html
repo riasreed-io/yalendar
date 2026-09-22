@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Ask · Yalendar{% endblock %}
+{% block content %}
+<section class="ask">
+  <div class="ask-intro">
+    <h1>Ask Yalendar</h1>
+    <p>Describe what you&rsquo;re looking for &mdash; a day, a topic, a school, or all three.</p>
+  </div>
+
+  <div class="chat" id="chat" data-today="{{ today }}">
+    <div class="bubble bot">
+      <p>Hi! I can dig through campus listings for you. Try one of these, or type your own.</p>
+    </div>
+    {% if answer %}
+    <div class="bubble me"><p>{{ answer.question }}</p></div>
+    <div class="bubble bot">
+      <p>{{ answer.reply }}</p>
+      {% if answer.events %}
+      <ul class="hits">
+        {% for event in answer.events %}
+        <li>
+          <span class="dot {{ event.channel }}" aria-hidden="true"></span>
+          <div>
+            <p class="hit-when">{{ event.when }}</p>
+            {% if event.url %}
+            <a class="hit-title" href="{{ event.url }}" rel="noopener" target="_blank">{{ event.title }}</a>
+            {% else %}
+            <span class="hit-title">{{ event.title }}</span>
+            {% endif %}
+            <p class="hit-meta">
+              {% if event.org %}{{ event.org }}{% endif %}
+              {% if event.location %} &middot; {{ event.location }}{% endif %}
+            </p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% if answer.more %}<p class="hit-more">and {{ answer.more }} more</p>{% endif %}
+      {% endif %}
+      {% if answer.suggestions %}
+      <div class="chips-inline">
+        {% for idea in answer.suggestions %}
+        <a class="chip" href="/ask?q={{ idea | urlencode }}">{{ idea }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if answer.link and answer.events %}
+      <a class="hit-link" href="{{ answer.link }}">{{ answer.link_label }} &rarr;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="ask-examples" id="ask-examples">
+    {% for idea in examples %}
+    <a class="chip" href="/ask?q={{ idea | urlencode }}">{{ idea }}</a>
+    {% endfor %}
+  </div>
+
+  <form class="ask-form" id="ask-form" action="/ask" method="get" autocomplete="off">
+    <input type="text" id="ask-input" name="q" value="" maxlength="300"
+           placeholder="e.g. free food tomorrow" aria-label="Ask about upcoming events">
+    <button type="submit">Ask</button>
+  </form>
+</section>
+
+<template id="tpl-hit">
+  <li>
+    <span class="dot" aria-hidden="true"></span>
+    <div>
+      <p class="hit-when"></p>
+      <a class="hit-title" rel="noopener" target="_blank"></a>
+      <p class="hit-meta"></p>
+    </div>
+  </li>
+</template>
+
+<script>
+(function () {
+  var form = document.getElementById("ask-form");
+  var input = document.getElementById("ask-input");
+  var chat = document.getElementById("chat");
+  var examples = document.getElementById("ask-examples");
+  var tpl = document.getElementById("tpl-hit");
+  if (!form || !input || !chat) return;
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function bubble(kind) {
+    var node = el("div", "bubble " + kind);
+    chat.appendChild(node);
+    node.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return node;
+  }
+
+  function render(node, data) {
+    node.textContent = "";
+    node.appendChild(el("p", null, data.reply));
+
+    if (data.events && data.events.length) {
+      var list = el("ul", "hits");
+      data.events.forEach(function (event) {
+        var item = tpl.content.cloneNode(true);
+        item.querySelector(".dot").classList.add(event.channel || "public");
+        item.querySelector(".hit-when").textContent = event.when;
+        var title = item.querySelector(".hit-title");
+        title.textContent = event.title;
+        if (event.url) {
+          title.href = event.url;
+        } else {
+          var span = el("span", "hit-title", event.title);
+          title.replaceWith(span);
+        }
+        var meta = [event.org, event.location].filter(Boolean).join(" · ");
+        item.querySelector(".hit-meta").textContent = meta;
+        list.appendChild(item);
+      });
+      node.appendChild(list);
+      if (data.more) node.appendChild(el("p", "hit-more", "and " + data.more + " more"));
+    }
+
+    if (data.suggestions && data.suggestions.length) {
+      var wrap = el("div", "chips-inline");
+      data.suggestions.forEach(function (idea) {
+        var chip = el("a", "chip", idea);
+        chip.href = "/ask?q=" + encodeURIComponent(idea);
+        chip.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          send(idea);
+        });
+        wrap.appendChild(chip);
+      });
+      node.appendChild(wrap);
+    }
+
+    if (data.link && data.events && data.events.length) {
+      var link = el("a", "hit-link", (data.link_label || "Open in the calendar") + " →");
+      link.href = data.link;
+      node.appendChild(link);
+    }
+    node.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function send(question) {
+    question = (question || "").trim();
+    if (!question) return;
+    bubble("me").appendChild(el("p", null, question));
+    input.value = "";
+    var pending = bubble("bot typing");
+    pending.appendChild(el("span", "dots"));
+
+    var body = new FormData();
+    body.append("q", question);
+    fetch("/ask", { method: "POST", body: body, headers: { "Accept": "application/json" } })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        pending.classList.remove("typing");
+        render(pending, data);
+      })
+      .catch(function () {
+        pending.classList.remove("typing");
+        pending.textContent = "";
+        pending.appendChild(el("p", null,
+          "Something went wrong reaching the calendar. Try again in a moment."));
+      });
+  }
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    send(input.value);
+  });
+
+  if (examples) {
+    examples.addEventListener("click", function (ev) {
+      var chip = ev.target.closest(".chip");
+      if (!chip) return;
+      ev.preventDefault();
+      send(chip.textContent.trim());
+    });
+  }
+
+  // Only take focus when there is nothing to read yet. Focusing the input at
+  // the bottom of a tall page scrolls the answer off-screen and pops the
+  // keyboard on a phone.
+  if (chat.querySelectorAll(".bubble").length < 2) {
+    try { input.focus({ preventScroll: true }); } catch (e) { input.focus(); }
+  }
+})();
+</script>
+{% endblock %}
