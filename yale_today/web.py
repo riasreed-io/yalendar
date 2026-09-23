@@ -7,12 +7,13 @@ from datetime import date, datetime, timedelta
 from urllib.parse import urlencode
 
 from fastapi import FastAPI, Form, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import assistant, db, ingest
+from . import api, assistant, db, ingest
 from .auth import dashboard_password
 from .config import ROOT, TZINFO, WINDOW_DAYS, SHARED_INVITE, now_local, today_local
 from .dedupe import events_for_day, events_for_range
@@ -26,6 +27,27 @@ app.add_middleware(
     https_only=os.environ.get("YALE_TODAY_HTTPS") == "1",
 )
 templates = Jinja2Templates(directory=str(ROOT / "yale_today" / "templates"))
+
+# The React frontend runs on its own origin in development. Extra origins can
+# be added with YALENDAR_CORS_ORIGINS as a comma-separated list.
+_cors_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+]
+_cors_origins += [
+    origin.strip()
+    for origin in os.environ.get("YALENDAR_CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+app.include_router(api.router)
 
 
 def format_when(start: str, all_day: int) -> str:

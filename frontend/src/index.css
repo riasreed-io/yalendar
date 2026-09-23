@@ -1,0 +1,360 @@
+/* Yalendar design system, carried over from the server-rendered stylesheet:
+   same Yale palette, same Source Sans/Serif pairing, same source colours. */
+:root {
+  --yale-blue: #00356b;
+  --yale-mid: #286dc0;
+  --yale-gold: #bd9b60;
+  --yale-sand: #f4efe4;
+  --yale-ink: #222222;
+  --muted: #5b6770;
+  --card: #ffffff;
+  --line: #d9d1c3;
+  --sans: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --serif: "Source Serif 4", "Iowan Old Style", Palatino, serif;
+}
+
+* { box-sizing: border-box; }
+html, body { max-width: 100%; overflow-x: hidden; }
+body {
+  margin: 0;
+  background: var(--yale-sand);
+  color: var(--yale-ink);
+  font-family: var(--sans);
+}
+a { color: var(--yale-mid); }
+button { font-family: var(--sans); cursor: pointer; }
+
+/* Header */
+.top {
+  background: var(--yale-blue);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.75rem;
+  gap: 1rem;
+  border-bottom: 4px solid var(--yale-gold);
+}
+.yale-mark {
+  display: block;
+  font-family: var(--serif);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--yale-gold);
+}
+.brand h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+.brand p { margin: 0.15rem 0 0; font-size: 0.85rem; opacity: 0.8; }
+.top nav { display: flex; gap: 1.1rem; flex-wrap: wrap; }
+.top nav button {
+  background: none;
+  border: 0;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.2rem 0;
+  border-bottom: 2px solid transparent;
+}
+.top nav button.on { border-bottom-color: var(--yale-gold); }
+
+main { max-width: 1400px; margin: 0 auto; padding: 1.25rem; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.feed { min-width: 0; }
+
+/* Sidebar */
+.filters {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 0.9rem;
+  position: sticky;
+  top: 1rem;
+}
+.filters label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  margin: 0.85rem 0 0.25rem;
+}
+.filters input, .filters select {
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--line);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  background: #fff;
+}
+.date-nav { display: flex; align-items: center; gap: 0.4rem; }
+.date-nav input { flex: 1 1 auto; }
+.ghost {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--yale-blue);
+  padding: 0.4rem 0.6rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.hint { font-size: 0.78rem; color: var(--muted); line-height: 1.45; margin-top: 1rem; }
+
+/* Feed header */
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+.meta-row h2 {
+  margin: 0;
+  font-family: var(--serif);
+  color: var(--yale-blue);
+  font-size: 1.6rem;
+}
+.meta-row p { margin: 0.1rem 0 0; color: var(--muted); font-size: 0.9rem; }
+
+/* Chips */
+.chip-row { margin-bottom: 0.7rem; }
+.chip-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  margin: 0 0 0.3rem;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.chip {
+  background: #fff;
+  color: var(--yale-blue);
+  border: 1px solid var(--line);
+  padding: 0.32rem 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.chip em { font-style: normal; color: var(--muted); font-weight: 400; }
+.chip.ch-yale_connect { border-color: #286dc0; background: #e8f1fb; }
+.chip.ch-campus_groups { border-color: var(--yale-gold); background: #f7f0e2; }
+.chip.ch-public { border-color: #8a6d3b; background: #f8f1e4; }
+.chip.ch-community { border-color: #3d7a55; background: #e8f4eb; }
+.chip.on { background: var(--yale-blue); color: #fff; border-color: var(--yale-blue); }
+.chip.on em { color: #c5d4e8; }
+
+/* Time slider */
+.time-row { margin: 0.2rem 0 1rem; }
+.time-head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.time-readout { font-size: 0.9rem; color: var(--muted); }
+.slider-wrap { padding: 0.35rem 0 0; }
+.slider-wrap.dim { opacity: 0.45; }
+.slider-wrap input[type="range"] { width: 100%; accent-color: var(--yale-blue); }
+.ticks { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); }
+
+/* Events */
+.events { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.event {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid #8a6d3b;
+  padding: 0.8rem 0.9rem;
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+}
+.event.ch-yale_connect { border-left-color: #286dc0; }
+.event.ch-campus_groups { border-left-color: var(--yale-gold); }
+.event.ch-community { border-left-color: #3d7a55; }
+.when { font-size: 0.85rem; font-weight: 700; color: var(--yale-mid); }
+.event-head { position: relative; padding-right: 2.6rem; margin: 0 0 0.25rem; }
+.event-head h3 {
+  margin: 0;
+  font-size: 1.12rem;
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.event-head h3 a { color: var(--yale-blue); text-decoration: none; }
+.event-head h3 a:hover { color: var(--yale-mid); }
+/* The disclosure control is absolutely positioned so opening and closing
+   stay the exact same click target. */
+.expand-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--yale-blue);
+  font-size: 0.8rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.desc { margin: 0.4rem 0 0; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; }
+.pills { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.35rem 0 0; }
+.pill {
+  font-size: 0.72rem;
+  border: 1px solid var(--line);
+  padding: 0.12rem 0.4rem;
+  color: var(--muted);
+  background: #fff;
+}
+.pill.ch-yale_connect { border-color: #286dc0; color: #1c4f8f; }
+.pill.ch-campus_groups { border-color: var(--yale-gold); color: #7a6328; }
+.pill.ch-community { border-color: #3d7a55; color: #2b573c; }
+.sub { margin: 0.3rem 0 0; font-size: 0.83rem; color: var(--muted); }
+.empty { color: var(--muted); font-style: italic; padding: 1.5rem 0; }
+.error { color: #8a2b2b; background: #fbeaea; border: 1px solid #e2b9b9; padding: 0.7rem; }
+
+/* Week */
+.week-grid { display: grid; grid-template-columns: repeat(7, minmax(140px, 1fr)); gap: 0.5rem; overflow-x: auto; }
+.week-col { background: var(--card); border: 1px solid var(--line); min-width: 0; padding: 0.4rem; }
+.week-col h3 { margin: 0 0 0.35rem; font-size: 0.8rem; color: var(--yale-blue); }
+.week-col.today h3 { background: #d4e6f7; padding: 0.15rem 0.3rem; }
+.week-item { border-top: 1px solid var(--line); padding: 0.35rem 0; font-size: 0.78rem; }
+.week-item a { color: var(--yale-blue); text-decoration: none; font-weight: 600; }
+
+/* Month */
+.month-weekdays, .month-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.month-weekdays div {
+  text-align: center;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 0.3rem 0;
+}
+.month-cell { background: var(--card); border: 1px solid var(--line); min-height: 6rem; padding: 0.3rem; }
+.month-cell.out { opacity: 0.45; }
+.month-cell.today { background: #d4e6f7; }
+.month-num { font-size: 0.82rem; font-weight: 700; color: var(--yale-blue); }
+.month-cell ul { list-style: none; margin: 0.2rem 0 0; padding: 0; }
+.month-cell li { font-size: 0.68rem; line-height: 1.3; margin-bottom: 0.15rem; }
+.month-cell li a { color: var(--yale-blue); text-decoration: none; }
+.month-more { font-size: 0.66rem; color: var(--muted); }
+
+/* Ask panel */
+.chat-dock {
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border: 1px solid var(--line);
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: min(23rem, 100vw);
+  max-height: min(70vh, 34rem);
+  z-index: 60;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+  transform: translateY(calc(100% + 2rem));
+  visibility: hidden;
+  transition: transform 0.18s ease-out, visibility 0.18s;
+}
+.chat-dock.open { transform: none; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .chat-dock { transition: none; } }
+.chat-dock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.8rem;
+  background: var(--yale-blue);
+  border-bottom: 1px solid var(--line);
+}
+.chat-dock-head h2 { margin: 0; font-family: var(--serif); font-size: 1rem; color: #fff; }
+.chat-close { background: none; border: 0; color: #fff; font-size: 1.35rem; line-height: 1; }
+.chat-launch {
+  position: fixed;
+  right: 1rem;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 61;
+  border: 0;
+  border-radius: 999px;
+  background: var(--yale-blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.7rem 1.25rem;
+  box-shadow: 0 4px 14px rgba(0, 53, 107, 0.35);
+}
+body.chat-open .chat-launch { display: none; }
+.chat { display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; padding: 0.75rem 0.8rem; flex: 1 1 auto; }
+.bubble { max-width: 100%; padding: 0.6rem 0.75rem; border-radius: 14px; line-height: 1.45; font-size: 0.88rem; }
+.bubble p { margin: 0; }
+.bubble.bot { align-self: flex-start; background: var(--yale-sand); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.bubble.me { align-self: flex-end; background: var(--yale-blue); color: #fff; border-bottom-right-radius: 4px; }
+.hits { list-style: none; margin: 0.7rem 0 0; padding: 0; display: grid; gap: 0.6rem; }
+.hits li { display: flex; gap: 0.55rem; align-items: flex-start; }
+.dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 0.45rem; flex: 0 0 auto; background: #8a6d3b; }
+.dot.yale_connect { background: #286dc0; }
+.dot.campus_groups { background: var(--yale-gold); }
+.dot.community { background: #3d7a55; }
+.hit-when { font-size: 0.7rem; font-weight: 600; color: var(--yale-mid); text-transform: uppercase; margin: 0 0 0.1rem; }
+.hit-title { font-family: var(--serif); font-weight: 600; font-size: 0.92rem; color: var(--yale-blue); text-decoration: none; display: block; }
+.hit-meta { margin: 0.12rem 0 0; font-size: 0.78rem; color: var(--muted); }
+.hit-more { margin: 0.6rem 0 0; font-size: 0.82rem; color: var(--muted); font-style: italic; }
+.engine-tag { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 0.4rem; }
+.ask-examples { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0 0.8rem 0.6rem; }
+.ask-examples .chip { font-size: 0.78rem; padding: 0.24rem 0.45rem; }
+.ask-form { display: flex; gap: 0.5rem; padding: 0.6rem; border-top: 1px solid var(--line); background: var(--card); }
+.ask-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 1rem;
+}
+.ask-form button { padding: 0.7rem 0.95rem; border: 0; border-radius: 999px; background: var(--yale-blue); color: #fff; font-weight: 700; }
+.dots { display: inline-flex; gap: 4px; }
+.dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--yale-mid); animation: askpulse 1.1s infinite ease-in-out; }
+.dots span:nth-child(2) { animation-delay: 0.25s; }
+@keyframes askpulse {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* The chat earns a third column only when the feed can spare the width. */
+@media (min-width: 1360px) {
+  .layout.with-chat { grid-template-columns: 270px minmax(0, 1fr) 21rem; }
+  .chat-dock {
+    position: sticky;
+    top: 1.25rem;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    max-height: calc(100vh - 3rem);
+    transform: none;
+    visibility: visible;
+    box-shadow: none;
+    z-index: auto;
+    transition: none;
+  }
+  .chat-launch, .chat-close { display: none; }
+}
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 0.65rem; }
+  .filters { position: static; }
+  .top { flex-direction: column; align-items: flex-start; padding: 0.75rem 0.9rem; gap: 0.65rem; }
+  .brand p { display: none; }
+  main { padding: 0.75rem; }
+  .event { grid-template-columns: 1fr; }
+  .week-grid { grid-template-columns: 1fr; overflow-x: hidden; }
+  .month-cell { min-height: 4.2rem; }
+  input, select, textarea { font-size: 16px; max-width: 100%; }
+  .chat-dock { width: 100vw; max-height: 78vh; }
+}

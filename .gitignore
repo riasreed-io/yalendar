@@ -14,3 +14,8 @@ data/connect_login_status.json
 data/extra_ics.txt
 *.ics
 .DS_Store
+output/audit_trail.json
+output/*.corrupt.json
+node_modules/
+frontend/dist/
+frontend/node_modules/
