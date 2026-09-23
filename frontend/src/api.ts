@@ -2,6 +2,8 @@
 
 const BASE = (import.meta.env.VITE_API_BASE ?? 'http://127.0.0.1:8002').replace(/\/$/, '')
 
+// List rows omit `description` — it was ~46% of the payload and is only shown
+// when a row is expanded, so it is fetched per event from /api/events/{id}.
 export type Event = {
   id: string
   title: string
@@ -10,7 +12,6 @@ export type Event = {
   location: string
   org: string
   url: string
-  description: string
   source: string
   channel: string
   channel_label: string
@@ -19,16 +20,19 @@ export type Event = {
   dept: string
   dept_label: string
   also_listed: string[]
+  has_description: boolean
 }
 
-export type Facet = { slug: string; label: string; count: number }
+export type EventDetail = Event & { description: string; tags: string; end: string }
 
+export type Facet = { slug: string; label: string; count: number }
 export type Facets = {
   channels: Facet[]
   departments: Facet[]
   categories: Facet[]
   orgs: string[]
 }
+export type Group = { slug: string; label: string; count: number; ids: string[] }
 
 export type EventsResponse = {
   start: string
@@ -38,6 +42,7 @@ export type EventsResponse = {
   count: number
   events: Event[]
   facets: Facets
+  groups?: Group[]
 }
 
 export type AskHit = {
@@ -62,25 +67,22 @@ export type AskResponse = {
 }
 
 export type AgentStatus = { allowed: boolean; configured: boolean; public: boolean }
-
-export type Health = {
-  ok: boolean
-  today: string
-  events: number
-  data_from: string | null
-  data_through: string | null
+export type RefreshStatus = {
+  running: boolean
+  finished_at: string | null
+  result: { upserted: number | null; errors: string[] } | null
+  error: string | null
 }
 
-async function get<T>(path: string, params?: URLSearchParams): Promise<T> {
-  const url = params ? `${BASE}${path}?${params}` : `${BASE}${path}`
-  const res = await fetch(url)
+async function get<T>(path: string, params?: URLSearchParams, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(params ? `${BASE}${path}?${params}` : `${BASE}${path}`, { signal })
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return (await res.json()) as T
 }
 
-async function post<T>(path: string, body: unknown): Promise<T> {
+async function send<T>(path: string, method: 'POST' | 'PUT', body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    method: 'POST',
+    method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
@@ -94,30 +96,55 @@ export type EventQuery = {
   channel?: string[]
   dept?: string[]
   cat?: string[]
+  org?: string[]
   q?: string
   after?: string
+  sort?: string
+  group?: string
 }
 
-export function fetchEvents(query: EventQuery): Promise<EventsResponse> {
+export function buildEventParams(query: EventQuery): URLSearchParams {
   const params = new URLSearchParams({ start: query.start, end: query.end })
   for (const slug of query.channel ?? []) params.append('channel', slug)
   for (const slug of query.dept ?? []) params.append('dept', slug)
   for (const slug of query.cat ?? []) params.append('cat', slug)
+  for (const name of query.org ?? []) params.append('org', name)
   if (query.q) params.set('q', query.q)
   params.set('after', query.after ?? 'all')
-  return get<EventsResponse>('/api/events', params)
+  if (query.sort && query.sort !== 'time') params.set('sort', query.sort)
+  if (query.group && query.group !== 'none') params.set('group', query.group)
+  return params
 }
 
-export function fetchHealth(): Promise<Health> {
-  return get<Health>('/api/health')
+export function fetchEvents(query: EventQuery, signal?: AbortSignal): Promise<EventsResponse> {
+  return get<EventsResponse>('/api/events', buildEventParams(query), signal)
+}
+
+export function fetchEventDetail(id: string, signal?: AbortSignal): Promise<EventDetail> {
+  return get<EventDetail>(`/api/events/${encodeURIComponent(id)}`, undefined, signal)
 }
 
 export function fetchAgentStatus(): Promise<AgentStatus> {
   return get<AgentStatus>('/api/agent/status')
 }
 
-// Routes to the model-backed agent when it is available, otherwise the free
-// local search. The backend decides and reports which ran via `engine`.
+export function startRefresh(): Promise<{ started: boolean; running: boolean }> {
+  return send('/api/refresh', 'POST', {})
+}
+
+export function fetchRefreshStatus(): Promise<RefreshStatus> {
+  return get<RefreshStatus>('/api/refresh/status')
+}
+
+export function fetchFeeds(): Promise<{ urls: string[] }> {
+  return get<{ urls: string[] }>('/api/feeds')
+}
+
+export function saveFeeds(urls: string[]): Promise<{ urls: string[]; saved: number }> {
+  return send('/api/feeds', 'PUT', { urls })
+}
+
+// The backend decides which engine runs and reports it back via `engine`.
 export function ask(question: string, useAgent: boolean): Promise<AskResponse> {
-  return post<AskResponse>(useAgent ? '/api/agent' : '/api/ask', { q: question })
+  return send<AskResponse>(useAgent ? '/api/agent' : '/api/ask', 'POST', { q: question })
 }

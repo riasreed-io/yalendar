@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 
 from fastapi import FastAPI, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -28,21 +29,21 @@ app.add_middleware(
 )
 templates = Jinja2Templates(directory=str(ROOT / "yale_today" / "templates"))
 
-# The React frontend runs on its own origin in development. Extra origins can
-# be added with YALENDAR_CORS_ORIGINS as a comma-separated list.
+# The React frontend runs on its own origin in development, and Vite picks a
+# different port whenever the default is taken, so match any loopback port
+# rather than a fixed list. Deployed origins go in YALENDAR_CORS_ORIGINS.
+_cors_origin_regex = r"http://(localhost|127\.0\.0\.1)(:\d+)?"
 _cors_origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:4173",
-]
-_cors_origins += [
     origin.strip()
     for origin in os.environ.get("YALENDAR_CORS_ORIGINS", "").split(",")
     if origin.strip()
 ]
+# Event JSON is highly repetitive and compresses roughly 8x.
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
+    allow_origin_regex=_cors_origin_regex,
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],

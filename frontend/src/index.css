@@ -246,6 +246,107 @@ main { max-width: 1400px; margin: 0 auto; padding: 1.25rem; }
 .month-cell li a { color: var(--yale-blue); text-decoration: none; }
 .month-more { font-size: 0.66rem; color: var(--muted); }
 
+/* Mini month */
+.mini { margin: 0.6rem 0 0.2rem; }
+.mini-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--yale-blue);
+  margin-bottom: 0.3rem;
+}
+.mini-head .ghost { padding: 0.1rem 0.35rem; line-height: 1; }
+.mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+.mini-wd {
+  text-align: center;
+  font-size: 0.62rem;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 0.15rem 0;
+}
+.mini-day {
+  border: 0;
+  background: #fff;
+  color: var(--yale-ink);
+  font-size: 0.72rem;
+  padding: 0.25rem 0;
+  font-family: var(--sans);
+}
+.mini-day.out { color: #b7b2a8; }
+.mini-day.inweek { background: #eef4fb; }
+.mini-day.today { background: #d4e6f7; font-weight: 700; }
+.mini-day.sel { background: var(--yale-blue); color: #fff; font-weight: 700; }
+
+/* Sidebar field labels */
+.field-label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  margin: 0.85rem 0 0.25rem;
+}
+.today-link {
+  background: none;
+  border: 0;
+  color: var(--yale-mid);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.3rem 0 0;
+  text-align: left;
+}
+
+/* Grouped blocks */
+.cat-block { margin-bottom: 1.1rem; }
+.cat-head {
+  font-family: var(--serif);
+  color: var(--yale-blue);
+  font-size: 1.05rem;
+  margin: 0 0 0.4rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.2rem;
+}
+.cat-head span { color: var(--muted); font-size: 0.82rem; font-family: var(--sans); }
+
+/* Notices */
+.banner {
+  background: #e8f1fb;
+  border: 1px solid #b9d3ee;
+  color: #1c4f8f;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  margin: 0 0 0.8rem;
+}
+
+/* Feeds panel */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 1rem;
+}
+.panel h2 { margin: 0 0 0.3rem; font-family: var(--serif); color: var(--yale-blue); }
+.panel textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  padding: 0.55rem;
+  border: 1px solid var(--line);
+  margin-top: 0.5rem;
+}
+.panel .row { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.6rem; }
+.panel button {
+  background: var(--yale-blue);
+  color: #fff;
+  border: 0;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+}
+.panel button:disabled { opacity: 0.6; }
+
 /* Ask panel */
 .chat-dock {
   display: flex;
@@ -346,9 +447,41 @@ body.chat-open .chat-launch { display: none; }
   .chat-launch, .chat-close { display: none; }
 }
 
+.filter-toggle-label { display: none; }
+
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; gap: 0.65rem; }
-  .filters { position: static; }
+  /* No large empty card on first paint: a slim control, then chips and events. */
+  .filters {
+    position: static;
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+  .filter-toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin: 0;
+    padding: 0.2rem 0 0.45rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--yale-blue);
+    background: transparent;
+    border: 0;
+    text-align: left;
+  }
+  .filter-toggle-label::after { content: "▾"; font-weight: 700; color: var(--muted); }
+  .filters.open .filter-toggle-label::after { content: "▴"; }
+  .filter-panel { display: none; }
+  .filters.open .filter-panel {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 0.75rem;
+    margin-bottom: 0.35rem;
+  }
   .top { flex-direction: column; align-items: flex-start; padding: 0.75rem 0.9rem; gap: 0.65rem; }
   .brand p { display: none; }
   main { padding: 0.75rem; }

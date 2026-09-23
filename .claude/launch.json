@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "yalendar",
+      "name": "yalendar-frontend",
       "runtimeExecutable": "/bin/sh",
-      "runtimeArgs": ["-c", "cd /Users/rias/Projects/yale-today && exec .venv/bin/python -m yale_today serve --host 127.0.0.1 --port 8003"],
-      "port": 8003
+      "runtimeArgs": ["-c", "cd /Users/rias/Projects/yale-today/frontend && exec npx vite --port 5180 --strictPort"],
+      "port": 5180
     }
   ]
 }
