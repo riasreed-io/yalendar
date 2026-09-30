@@ -40,6 +40,7 @@ export default function WeekGrid({
           {column.events.length === 0 && <p className="month-more">Nothing listed</p>}
           {column.events.map((event) => (
             <div key={event.id} className="week-item">
+              <span className={`cat-dot cat-${event.category}`} aria-hidden="true" />
               <div className="hit-when">
                 {event.all_day
                   ? 'All day'

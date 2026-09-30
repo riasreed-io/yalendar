@@ -66,7 +66,7 @@ const EventRow = memo(function EventRow({ event }: { event: Event }) {
         <p className="pills">
           <span className={`pill ch-${event.channel}`}>{event.channel_label}</span>
           <span className="pill">{event.dept_label}</span>
-          <span className="pill">{event.category_label}</span>
+          <span className={`pill cat-${event.category}`}>{event.category_label}</span>
         </p>
         <p className="sub">
           {event.org}

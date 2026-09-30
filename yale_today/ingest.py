@@ -7,7 +7,7 @@ from calendar import monthrange
 from datetime import date, timedelta
 
 from . import community, connect, db, dedupe, ics_feeds, localist
-from .config import CONNECT_FEEDS_PATH
+from .config import CONNECT_FEEDS_PATH, today_local
 
 
 @dataclass

@@ -936,3 +936,48 @@ body.chat-open .chat-launch { display: none; }
   .chat-dock[data-dock] .ask-form { padding-bottom: max(0.6rem, env(safe-area-inset-bottom)); }
   .chat-launch { padding: 0.62rem 1.05rem; font-size: 0.88rem; }
 }
+
+/* ---------- Category colours ---------- */
+/* Generated from CATEGORY_COLORS in yale_today/categories.py.
+   Source colour stays on the left border of an event; category colour
+   rides the topic pill and chip, so the two never compete. */
+.cat-all_day { color: #6b6357; background: #f1eee7; border-color: #6b635733; }
+.cat-talks { color: #3f3a8c; background: #ebeafa; border-color: #3f3a8c33; }
+.cat-arts { color: #8e2c66; background: #fae9f2; border-color: #8e2c6633; }
+.cat-exhibits { color: #63389b; background: #f1ebfa; border-color: #63389b33; }
+.cat-sports { color: #2f6b3d; background: #e7f3ea; border-color: #2f6b3d33; }
+.cat-workshops { color: #15616b; background: #e4f2f3; border-color: #15616b33; }
+.cat-social { color: #96501b; background: #fbeee2; border-color: #96501b33; }
+.cat-meetings { color: #47536b; background: #eceef3; border-color: #47536b33; }
+.cat-health { color: #9c3548; background: #fae9ec; border-color: #9c354833; }
+.cat-academic { color: #1f4e8c; background: #e8f0fa; border-color: #1f4e8c33; }
+.cat-faith { color: #6f5a22; background: #f7f0e2; border-color: #6f5a2233; }
+.cat-other { color: #525d66; background: #eef0f1; border-color: #525d6633; }
+/* Selected topic chip: invert to the category colour so it reads as on. */
+.chip.on.cat-all_day { background: #6b6357; border-color: #6b6357; color: #fff; }
+.chip.on.cat-talks { background: #3f3a8c; border-color: #3f3a8c; color: #fff; }
+.chip.on.cat-arts { background: #8e2c66; border-color: #8e2c66; color: #fff; }
+.chip.on.cat-exhibits { background: #63389b; border-color: #63389b; color: #fff; }
+.chip.on.cat-sports { background: #2f6b3d; border-color: #2f6b3d; color: #fff; }
+.chip.on.cat-workshops { background: #15616b; border-color: #15616b; color: #fff; }
+.chip.on.cat-social { background: #96501b; border-color: #96501b; color: #fff; }
+.chip.on.cat-meetings { background: #47536b; border-color: #47536b; color: #fff; }
+.chip.on.cat-health { background: #9c3548; border-color: #9c3548; color: #fff; }
+.chip.on.cat-academic { background: #1f4e8c; border-color: #1f4e8c; color: #fff; }
+.chip.on.cat-faith { background: #6f5a22; border-color: #6f5a22; color: #fff; }
+.chip.on.cat-other { background: #525d66; border-color: #525d66; color: #fff; }
+/* Compact views: a category dot instead of a full pill. */
+.cat-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  margin-right: 0.3rem; flex: 0 0 auto; vertical-align: 0.05em; }
+.cat-dot.cat-all_day { background: #6b6357; }
+.cat-dot.cat-talks { background: #3f3a8c; }
+.cat-dot.cat-arts { background: #8e2c66; }
+.cat-dot.cat-exhibits { background: #63389b; }
+.cat-dot.cat-sports { background: #2f6b3d; }
+.cat-dot.cat-workshops { background: #15616b; }
+.cat-dot.cat-social { background: #96501b; }
+.cat-dot.cat-meetings { background: #47536b; }
+.cat-dot.cat-health { background: #9c3548; }
+.cat-dot.cat-academic { background: #1f4e8c; }
+.cat-dot.cat-faith { background: #6f5a22; }
+.cat-dot.cat-other { background: #525d66; }

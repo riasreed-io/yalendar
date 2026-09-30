@@ -319,7 +319,7 @@ export default function App() {
                       selected={channel}
                       onToggle={(slug) => toggleIn('channel', slug)}
                       onClear={() => patch({ channel: [] })}
-                      colorBySlug
+                      tintPrefix="ch-"
                     />
                     <Chips
                       label="School / department"
@@ -334,6 +334,7 @@ export default function App() {
                       selected={cat}
                       onToggle={(slug) => toggleIn('cat', slug)}
                       onClear={() => patch({ cat: [] })}
+                      tintPrefix="cat-"
                     />
                   </>
                 )}

@@ -6,7 +6,8 @@ type Props = {
   selected: string[]
   onToggle: (slug: string) => void
   onClear: () => void
-  colorBySlug?: boolean
+  /** Class prefix for per-option tinting, e.g. 'ch-' or 'cat-'. */
+  tintPrefix?: string
 }
 
 // Multi-select: OR within a row, AND across rows. Clicking a selected chip
@@ -17,7 +18,7 @@ export default function Chips({
   selected,
   onToggle,
   onClear,
-  colorBySlug = false,
+  tintPrefix,
 }: Props) {
   return (
     <div className="chip-row">
@@ -32,7 +33,7 @@ export default function Chips({
         </button>
         {options.map((option) => {
           const on = selected.includes(option.slug)
-          const tint = colorBySlug ? ` ch-${option.slug}` : ''
+          const tint = tintPrefix ? ` ${tintPrefix}${option.slug}` : ''
           return (
             <button
               key={option.slug}

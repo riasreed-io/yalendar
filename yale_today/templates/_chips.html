@@ -40,7 +40,7 @@
   <nav class="cats" aria-label="Topic">
     <a class="chip {% if not cat %}on{% endif %}" href="{{ href(cat=[]) }}">All</a>
     {% for item in facets.categories %}
-    <a class="chip {% if item.slug in cat %}on{% endif %}" href="{{ toggle('cat', item.slug) }}" aria-pressed="{{ 'true' if item.slug in cat else 'false' }}">{{ item.label }} <em>{{ item.count }}</em></a>
+    <a class="chip cat-{{ item.slug }} {% if item.slug in cat %}on{% endif %}" href="{{ toggle('cat', item.slug) }}" aria-pressed="{{ 'true' if item.slug in cat else 'false' }}">{{ item.label }} <em>{{ item.count }}</em></a>
     {% endfor %}
   </nav>
 </div>

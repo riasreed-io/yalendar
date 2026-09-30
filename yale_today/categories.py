@@ -19,6 +19,25 @@ CATEGORY_ORDER = [
 
 LABELS = dict(CATEGORY_ORDER)
 
+# Category colours, as (text, background). Source of truth for the
+# .cat-<slug> classes in static/style.css and frontend/src/index.css.
+# Every pair clears WCAG AA (4.5:1) against both its own background and the
+# sand page background; the weakest is all_day at 5.1:1.
+CATEGORY_COLORS: dict[str, tuple[str, str]] = {
+    "all_day": ("#6b6357", "#f1eee7"),
+    "talks": ("#3f3a8c", "#ebeafa"),
+    "arts": ("#8e2c66", "#fae9f2"),
+    "exhibits": ("#63389b", "#f1ebfa"),
+    "sports": ("#2f6b3d", "#e7f3ea"),
+    "workshops": ("#15616b", "#e4f2f3"),
+    "social": ("#96501b", "#fbeee2"),
+    "meetings": ("#47536b", "#eceef3"),
+    "health": ("#9c3548", "#fae9ec"),
+    "academic": ("#1f4e8c", "#e8f0fa"),
+    "faith": ("#6f5a22", "#f7f0e2"),
+    "other": ("#525d66", "#eef0f1"),
+}
+
 _RULES: list[tuple[str, tuple[str, ...]]] = [
     ("sports", ("athletics", "sport", "game vs", "intramural", "recreation")),
     ("exhibits", ("exhibition", "exhibits", "on view", "gallery", "museum")),

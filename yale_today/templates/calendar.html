@@ -76,7 +76,7 @@
           <ul>
             {% for event in cell.events %}
             <li class="ch-{{ event.channel }}">
-              <div class="month-event">
+              <div class="month-event"><span class="cat-dot cat-{{ event.category }}" aria-hidden="true" title="{{ event.category_label }}"></span>
                 {% if event.url %}
                 <a href="{{ event.url }}" rel="noopener" target="_blank">{{ event.title }}</a>
                 {% else %}

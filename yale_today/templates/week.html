@@ -75,6 +75,7 @@
         <ol>
           {% for event in col.events %}
           <li class="week-item ch-{{ event.channel }}">
+            <span class="cat-dot cat-{{ event.category }}" aria-hidden="true" title="{{ event.category_label }}"></span>
             <span class="when">{{ event.start|when(event.all_day) }}</span>
             {% include "_event_expand.html" %}
             <span class="sub">{{ event.dept_label }}</span>

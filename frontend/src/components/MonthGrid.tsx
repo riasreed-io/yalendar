@@ -66,6 +66,7 @@ export default function MonthGrid({
                 <ul>
                   {items.slice(0, PER_CELL).map((event) => (
                     <li key={event.id}>
+                      <span className={`cat-dot cat-${event.category}`} aria-hidden="true" />
                       {event.url ? (
                         <a href={event.url} target="_blank" rel="noopener noreferrer">
                           {event.title}
