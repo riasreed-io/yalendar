@@ -19,3 +19,5 @@ output/*.corrupt.json
 node_modules/
 frontend/dist/
 frontend/node_modules/
+data/browser_profile/
+data/session_state.json

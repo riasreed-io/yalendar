@@ -25,11 +25,42 @@ def main(argv: list[str] | None = None) -> None:
     )
     ingest_p.add_argument("--headed", action="store_true", help="Show the browser during Connect login (needed for Duo)")
 
+    sub.add_parser(
+        "login",
+        help="Sign into Yale Connect and Campus Groups once; the session is saved for later runs",
+    )
+    sub.add_parser("login-check", help="Verify the saved signed-in session still works")
+    harvest_p = sub.add_parser(
+        "harvest", help="Pull signed-in events using the saved session (no Duo)")
+    harvest_p.add_argument("--month", help="Limit to YYYY-MM")
+
     serve_p = sub.add_parser("serve", help="Run the private dashboard")
     serve_p.add_argument("--host", default="0.0.0.0")
     serve_p.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8000")))
 
     args = parser.parse_args(argv)
+
+    if args.cmd in {"login", "login-check", "harvest"}:
+        from . import session_login
+
+        if args.cmd == "login":
+            report = session_login.interactive_login()
+        elif args.cmd == "login-check":
+            report = session_login.check_session()
+        else:
+            events, report = session_login.harvest(month=getattr(args, "month", "") or "")
+            print(f"Pulled {len(events)} signed-in events.")
+
+        print("\nSigned-in status")
+        print("-" * 56)
+        for check in report.checks:
+            mark = "OK  " if check.signed_in else "FAIL"
+            extra = f" ({check.private_rows} sign-in-only)" if check.private_rows else ""
+            print(f"  [{mark}] {check.name:22} {check.rows:4d} events{extra}  {check.detail}")
+        if not report.ok:
+            print("\nRun `python -m yale_today login` to sign in.")
+        return
+
     if args.cmd == "ingest":
         report = run_ingest(
             include_connect_login=args.connect_login,
