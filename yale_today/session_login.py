@@ -235,6 +235,10 @@ def harvest(start_day: str = "", days: int = 0, month: str = "") -> tuple[list, 
                 check = _probe(page, platform)
                 report.checks.append(check)
                 if not check.signed_in:
+                    db.record_source_run(
+                        platform.source, 0, label=f"{platform.name} (signed in)",
+                        status="error", detail="session expired - run `login` again",
+                        authenticated=True)
                     continue
 
                 offset = 0
@@ -259,6 +263,12 @@ def harvest(start_day: str = "", days: int = 0, month: str = "") -> tuple[list, 
                         break
                     offset += 50
                 check.detail = f"pulled {found_any}"
+                db.record_source_run(
+                    platform.source, found_any,
+                    label=f"{platform.name} (signed in)", status="ok",
+                    detail=f"{check.private_rows} venues still hidden"
+                            if check.private_rows else "all venues visible",
+                    authenticated=True)
             # Refresh the saved cookies so the session keeps rolling forward.
             context.storage_state(path=str(STATE_PATH))
         finally:

@@ -32,6 +32,22 @@ CREATE INDEX IF NOT EXISTS idx_events_source ON events(source);
 CREATE INDEX IF NOT EXISTS idx_events_fingerprint ON events(fingerprint);
 CREATE INDEX IF NOT EXISTS idx_events_canonical ON events(canonical_id);
 
+-- One row per source per ingest attempt. This is the provenance record
+-- behind the Sources tab: what was pulled, how many, when, and whether it
+-- worked. Failures are recorded too, so a silent outage is visible.
+CREATE TABLE IF NOT EXISTS source_runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source TEXT NOT NULL,
+    label TEXT,
+    event_count INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'ok',
+    detail TEXT,
+    authenticated INTEGER NOT NULL DEFAULT 0,
+    ran_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_source_runs_source ON source_runs(source, ran_at);
+
 CREATE TABLE IF NOT EXISTS feeds (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT,
@@ -229,3 +245,88 @@ def replace_feeds(urls: list[str], path: Path | None = None) -> None:
                     ("", url, "ics"),
                 )
     con.close()
+
+
+def record_source_run(
+    source: str,
+    event_count: int,
+    *,
+    label: str = "",
+    status: str = "ok",
+    detail: str = "",
+    authenticated: bool = False,
+    path: Path | None = None,
+) -> None:
+    """Log one source's result from an ingest, successful or not."""
+    from .config import now_local
+
+    con = connect(path)
+    with con:
+        con.execute(
+            """INSERT INTO source_runs
+               (source, label, event_count, status, detail, authenticated, ran_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (source, label, int(event_count), status, detail,
+             1 if authenticated else 0, now_local().isoformat(timespec="seconds")),
+        )
+    con.close()
+
+
+def source_run_summary(path: Path | None = None) -> list[dict]:
+    """Latest run per source, joined to what is actually in the database.
+
+    Sources that have never reported a run still appear, so a source that
+    quietly stopped being attempted is visible rather than absent.
+    """
+    con = connect(path)
+    latest = {
+        row["source"]: dict(row)
+        for row in con.execute(
+            """SELECT r.* FROM source_runs r
+               JOIN (SELECT source, MAX(ran_at) AS m, MAX(id) AS mi
+                     FROM source_runs GROUP BY source) t
+                 ON r.source = t.source AND r.id = t.mi"""
+        ).fetchall()
+    }
+    stored = {
+        row["source"]: dict(row)
+        for row in con.execute(
+            """SELECT source, COUNT(*) AS in_db,
+                      MIN(substr(start,1,10)) AS first_date,
+                      MAX(substr(start,1,10)) AS last_date
+               FROM events GROUP BY source"""
+        ).fetchall()
+    }
+    con.close()
+
+    rows = []
+    for source in sorted(set(latest) | set(stored)):
+        run = latest.get(source, {})
+        db_row = stored.get(source, {})
+        rows.append(
+            {
+                "source": source,
+                "label": run.get("label") or source,
+                "last_count": run.get("event_count"),
+                "status": run.get("status") or ("never run" if not run else "ok"),
+                "detail": run.get("detail") or "",
+                "authenticated": bool(run.get("authenticated")),
+                "ran_at": run.get("ran_at"),
+                "in_db": db_row.get("in_db", 0),
+                "first_date": db_row.get("first_date"),
+                "last_date": db_row.get("last_date"),
+            }
+        )
+    return rows
+
+
+def source_run_history(limit: int = 60, path: Path | None = None) -> list[dict]:
+    con = connect(path)
+    rows = [
+        dict(r)
+        for r in con.execute(
+            "SELECT * FROM source_runs ORDER BY id DESC LIMIT ?", (limit,)
+        ).fetchall()
+    ]
+    con.close()
+    return rows

@@ -197,6 +197,17 @@ def event_detail(event_id: str) -> dict:
     return detail
 
 
+@router.get("/sources")
+def sources() -> dict:
+    """Provenance for the Sources tab: pulled what, how many, when."""
+    rows = db.source_run_summary()
+    return {
+        "sources": rows,
+        "history": db.source_run_history(limit=40),
+        "total_in_db": sum(r["in_db"] for r in rows),
+    }
+
+
 @router.get("/meta")
 def meta() -> dict:
     return {

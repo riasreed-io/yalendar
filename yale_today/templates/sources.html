@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Sources · Yalendar{% endblock %}
+{% block content %}
+<section class="sources">
+  <div class="meta-row">
+    <div>
+      <h1>Where these events come from</h1>
+      <p>
+        {{ healthy }} of {{ expected }} sources reporting &middot;
+        {{ total }} events stored &middot; checked {{ today }}
+      </p>
+    </div>
+    <form method="post" action="/refresh?next=sources">
+      <button class="ghost" type="submit">Refresh now</button>
+    </form>
+  </div>
+
+  <p class="chip-hint">
+    Each row is a real pull, logged when it ran. &ldquo;Last pulled&rdquo; is the
+    time that source last reported; &ldquo;in database&rdquo; is what is stored from
+    it right now. A source that fails is kept in the list and marked, so an
+    outage is visible rather than silently missing.
+  </p>
+
+  <table class="src-table">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Where from</th>
+        <th class="num">Last pull</th>
+        <th class="num">In database</th>
+        <th>Covers</th>
+        <th>Last pulled</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr class="{{ 'bad' if row.status not in ['ok'] else '' }}">
+        <td>
+          <span class="dot {{ row.slug }}" aria-hidden="true"></span>
+          <strong>{{ row.label }}</strong>
+          {% if row.authenticated %}<span class="tag-auth">signed in</span>{% endif %}
+        </td>
+        <td class="muted-cell">{{ row.origin }}<br><span class="tiny">{{ row.kind }}</span></td>
+        <td class="num">{% if row.last_count is not none %}{{ row.last_count }}{% else %}&mdash;{% endif %}</td>
+        <td class="num"><strong>{{ row.in_db }}</strong></td>
+        <td class="tiny">
+          {% if row.first_date %}{{ row.first_date }} &rarr; {{ row.last_date }}{% else %}&mdash;{% endif %}
+        </td>
+        <td class="tiny">{% if row.ran_at %}{{ row.ran_at.replace('T', ' ')[:16] }}{% else %}never{% endif %}</td>
+        <td>
+          {% if row.status == 'ok' %}
+          <span class="badge good">ok</span>
+          {% else %}
+          <span class="badge bad">{{ row.status }}</span>
+          {% endif %}
+          {% if row.detail %}<div class="tiny">{{ row.detail }}</div>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <details class="src-history">
+    <summary>Recent pull history ({{ history|length }} entries)</summary>
+    <table class="src-table tiny">
+      <thead>
+        <tr><th>When</th><th>Source</th><th class="num">Events</th><th>Status</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+        {% for run in history %}
+        <tr class="{{ 'bad' if run.status != 'ok' else '' }}">
+          <td>{{ run.ran_at.replace('T', ' ')[:16] }}</td>
+          <td>{{ run.label or run.source }}{% if run.authenticated %} <span class="tag-auth">signed in</span>{% endif %}</td>
+          <td class="num">{{ run.event_count }}</td>
+          <td>{{ run.status }}</td>
+          <td>{{ run.detail }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+</section>
+{% endblock %}

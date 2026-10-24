@@ -431,6 +431,63 @@ def friends(request: Request):
     )
 
 
+# Every source Yalendar is meant to pull, so the Sources tab can show a
+# source that has gone quiet rather than silently omitting it.
+EXPECTED_SOURCES = [
+    ("localist", "Yale Events (Localist)", "events.yale.edu", "public"),
+    ("yale_connect", "Yale Connect", "yaleconnect.yale.edu", "public + signed in"),
+    ("campus_groups", "SOM Campus Groups", "groups.som.yale.edu", "public + signed in"),
+    ("athletics", "Yale Athletics", "yalebulldogs.com", "public ICS"),
+    ("nhfpl", "New Haven Free Public Library", "nhfpl.libcal.com", "public"),
+    ("unh", "University of New Haven", "newhaven.edu", "public"),
+    ("ics", "Extra ICS feeds", "set under Feeds", "public ICS"),
+]
+
+
+@app.get("/sources", response_class=HTMLResponse)
+def sources_page(request: Request):
+    """Provenance: what was pulled, how many, and when."""
+    rows = {row["source"]: row for row in db.source_run_summary()}
+    table = []
+    for slug, label, origin, kind in EXPECTED_SOURCES:
+        row = rows.get(slug, {})
+        table.append(
+            {
+                "slug": slug,
+                "label": label,
+                "origin": origin,
+                "kind": kind,
+                "in_db": row.get("in_db", 0),
+                "last_count": row.get("last_count"),
+                "ran_at": row.get("ran_at"),
+                "status": row.get("status") or "never run",
+                "detail": row.get("detail") or "",
+                "authenticated": row.get("authenticated", False),
+                "first_date": row.get("first_date"),
+                "last_date": row.get("last_date"),
+            }
+        )
+    # Anything recorded that is not in the expected list still gets shown.
+    for slug, row in rows.items():
+        if slug not in {s for s, *_ in EXPECTED_SOURCES}:
+            table.append({**row, "slug": slug, "origin": "-", "kind": "-",
+                          "label": row.get("label") or slug})
+    total = sum(r["in_db"] for r in table)
+    healthy = sum(1 for r in table if r["status"] == "ok" and r["in_db"])
+    return templates.TemplateResponse(
+        request,
+        "sources.html",
+        {
+            "rows": table,
+            "history": db.source_run_history(limit=40),
+            "total": total,
+            "healthy": healthy,
+            "expected": len(EXPECTED_SOURCES),
+            "today": today_local().isoformat(),
+        },
+    )
+
+
 @app.get("/settings", response_class=HTMLResponse)
 def settings(request: Request):
     if not _logged_in(request):
@@ -464,6 +521,8 @@ def refresh(request: Request):
     if dest == "day":
         day = request.query_params.get("day") or today_local().isoformat()
         return RedirectResponse(f"/?day={day}&notice={notice}", status_code=302)
+    if dest == "sources":
+        return RedirectResponse(f"/sources?notice={notice}", status_code=302)
     if dest == "week":
         start = request.query_params.get("start") or today_local().isoformat()
         return RedirectResponse(f"/week?start={start}&notice={notice}", status_code=302)

@@ -981,3 +981,55 @@ body.chat-open .chat-launch { display: none; }
 .cat-dot.cat-academic { background: #1f4e8c; }
 .cat-dot.cat-faith { background: #6f5a22; }
 .cat-dot.cat-other { background: #525d66; }
+
+/* ---------- Sources (provenance) tab ---------- */
+.sources { max-width: 70rem; }
+.src-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+.src-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--yale-sand);
+}
+.src-table td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.src-table tr:last-child td { border-bottom: 0; }
+.src-table tr.bad { background: #fdf3f3; }
+.src-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.src-table .tiny { font-size: 0.75rem; color: var(--muted); }
+.src-table .muted-cell { color: var(--muted); font-size: 0.8rem; }
+.src-table .dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  margin-right: 0.4rem; background: #8a6d3b;
+}
+.src-table .dot.yale_connect { background: #286dc0; }
+.src-table .dot.campus_groups { background: var(--yale-gold); }
+.src-table .dot.nhfpl, .src-table .dot.unh { background: #3d7a55; }
+.badge {
+  display: inline-block; padding: 0.1rem 0.4rem; font-size: 0.72rem;
+  font-weight: 700; border: 1px solid transparent;
+}
+.badge.good { color: #2f6b3d; background: #e7f3ea; border-color: #2f6b3d33; }
+.badge.bad { color: #9c3548; background: #fae9ec; border-color: #9c354833; }
+.tag-auth {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: #1f4e8c; background: #e8f0fa;
+  border: 1px solid #1f4e8c33; padding: 0.05rem 0.3rem; margin-left: 0.3rem;
+}
+.src-history { margin-top: 1rem; }
+.src-history summary {
+  cursor: pointer; font-weight: 600; color: var(--yale-blue);
+  padding: 0.4rem 0; font-size: 0.9rem;
+}
+@media (max-width: 860px) {
+  .src-table { font-size: 0.78rem; display: block; overflow-x: auto; }
+}

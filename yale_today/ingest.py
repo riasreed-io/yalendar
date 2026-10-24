@@ -99,11 +99,36 @@ def run_ingest(
             return in_window(events, window_start, window_days)
         return events
 
-    def pull(label: str, fn):
+    def _log(label: str, events, *, status: str = "ok", detail: str = "",
+             authenticated: bool = False, fallback: str = "") -> None:
+        """Record what each source produced, so the Sources tab can prove it."""
+        from collections import Counter
+
+        counts: Counter = Counter()
+        for ev in events or []:
+            src = getattr(ev, "source", None)
+            if src is None and isinstance(ev, dict):
+                src = ev.get("source")
+            counts[src or fallback] += 1
+        if not counts and fallback:
+            counts[fallback] = 0
+        for src, n in counts.items():
+            if not src:
+                continue
+            db.record_source_run(src, n, label=label, status=status,
+                                 detail=detail, authenticated=authenticated)
+
+    def pull(label: str, fn, source: str = ""):
         try:
             return fn()
         except Exception as exc:
             report.errors.append(f"{label}: {exc.__class__.__name__}")
+            # A failed source must still leave a record, otherwise an outage
+            # looks identical to a source that was never configured.
+            if source:
+                db.record_source_run(
+                    source, 0, label=label, status="error",
+                    detail=f"{exc.__class__.__name__}: {exc}"[:200])
             return []
 
     if include_connect_login:
@@ -142,30 +167,44 @@ def run_ingest(
             report.errors.append(msg)
 
     localist_events = pull(
-        "Yale Events",
+        "Yale Events (Localist)",
         lambda: localist.fetch_localist(days=span, start=start) if start else localist.fetch_localist(),
+        source="localist",
     )
     report.localist = len(localist_events)
-    collected.extend(keep(localist_events))
+    kept_localist = keep(localist_events)
+    collected.extend(kept_localist)
+    _log("Yale Events (Localist)", kept_localist, fallback="localist")
 
-    connect_events = pull("Yale Connect public", lambda: connect.fetch_connect_public(limit=1500))
+    connect_events = pull("Yale Connect (public)",
+                          lambda: connect.fetch_connect_public(limit=1500),
+                          source="yale_connect")
     chunk = keep(connect_events)
     collected.extend(chunk)
     report.yale_connect = max(report.yale_connect, len(chunk))
+    _log("Yale Connect (public)", chunk, fallback="yale_connect")
 
-    som_events = pull("Campus Groups public", lambda: connect.fetch_som_campus_groups(limit=1500))
+    som_events = pull("SOM Campus Groups (public)",
+                      lambda: connect.fetch_som_campus_groups(limit=1500),
+                      source="campus_groups")
     chunk = keep(som_events)
     collected.extend(chunk)
     report.campus_groups = max(report.campus_groups, len(chunk))
+    _log("SOM Campus Groups (public)", chunk, fallback="campus_groups")
 
-    community_events = pull("New Haven community", community.fetch_community)
-    collected.extend(keep(community_events))
-    report.community = len(keep(community_events))
+    community_events = pull("New Haven community", community.fetch_community,
+                            source="community")
+    kept_community = keep(community_events)
+    collected.extend(kept_community)
+    report.community = len(kept_community)
+    _log("New Haven community", kept_community)
 
-    default_ics = pull("Athletics", ics_feeds.fetch_default_ics)
+    default_ics = pull("Yale Athletics (ICS)", ics_feeds.fetch_default_ics,
+                       source="athletics")
     default_ics = keep(default_ics)
     report.ics = len(default_ics)
     collected.extend(default_ics)
+    _log("Yale Athletics (ICS)", default_ics, fallback="athletics")
 
     extra_urls: list[str] = []
     if CONNECT_FEEDS_PATH.exists():
@@ -186,6 +225,8 @@ def run_ingest(
     extra_events = keep(extra_events)
     report.extra_ics += len(extra_events)
     collected.extend(extra_events)
+    if extra_urls:
+        _log(f"Extra ICS feeds ({len(set(extra_urls))})", extra_events, fallback="ics")
 
     report.total_upserted = db.upsert_events(collected)
     if month and not window_days:
