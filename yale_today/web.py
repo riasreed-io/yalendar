@@ -290,6 +290,7 @@ def day_view(
     channels = _query_list(request, "channel")
     depts = _query_list(request, "dept")
     cats = _query_list(request, "cat")
+    units = _query_list(request, "unit")
     orgs = _query_list(request, "org") or ([org] if org else [])
     raw = events_for_day(day, source=source or None, q=q or None)
     facets = facet_options(apply_filters(list(raw)))
@@ -299,6 +300,7 @@ def day_view(
         dept=depts,
         org=orgs,
         cat=cats,
+        unit=units,
     )
     events = filter_by_time(events, after, now=now, tz=TZINFO)
     events = sort_events(events, sort)
@@ -316,6 +318,7 @@ def day_view(
         "org": orgs[0] if len(orgs) == 1 else "",
         "q": q or "",
         "cat": cats,
+        "unit": units,
         "after": after,
         "sort": sort,
         "group": group,
@@ -628,6 +631,7 @@ def week_view(
     channels = _query_list(request, "channel")
     depts = _query_list(request, "dept")
     cats = _query_list(request, "cat")
+    units = _query_list(request, "unit")
     orgs = _query_list(request, "org") or ([org] if org else [])
     raw = events_for_range(week_start.isoformat(), week_end.isoformat(), q=q or None)
     facets = facet_options(apply_filters(list(raw)), full=True)
@@ -637,6 +641,7 @@ def week_view(
         dept=depts,
         org=orgs,
         cat=cats,
+        unit=units,
     )
     events = filter_by_time(events, after, now=now, tz=TZINFO)
     by_day: dict[str, list] = {}
@@ -665,6 +670,7 @@ def week_view(
         "org": orgs[0] if len(orgs) == 1 else "",
         "q": q or "",
         "cat": cats,
+        "unit": units,
         "after": after,
     }
     href, toggle = _filter_href("/week", state)
@@ -725,6 +731,7 @@ def calendar_view(
     channels = _query_list(request, "channel")
     depts = _query_list(request, "dept")
     cats = _query_list(request, "cat")
+    units = _query_list(request, "unit")
     orgs = _query_list(request, "org") or ([org] if org else [])
     raw = events_for_range(current.isoformat(), last.isoformat(), q=q or None)
     facets = facet_options(apply_filters(list(raw)), full=True)
@@ -734,6 +741,7 @@ def calendar_view(
         dept=depts,
         org=orgs,
         cat=cats,
+        unit=units,
     )
     events = filter_by_time(events, after, now=now, tz=TZINFO)
     by_day: dict[str, list] = {}
@@ -765,6 +773,7 @@ def calendar_view(
         "org": orgs[0] if len(orgs) == 1 else "",
         "q": q or "",
         "cat": cats,
+        "unit": units,
         "after": after,
     }
     href, toggle = _filter_href("/calendar", state)

@@ -22,6 +22,17 @@
         <input type="search" name="q" value="{{ q }}" placeholder="Talk, club, place…">
       </label>
 
+      <label>Department / group
+        <select name="unit" onchange="this.form.submit()">
+          <option value="">All {{ facets.units|length }} departments</option>
+          {% for item in facets.units %}
+          <option value="{{ item.slug }}" {% if item.slug in unit %}selected{% endif %}>
+            {{ item.label }} ({{ item.count }})
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+
       <label>Organization
         <select name="org" onchange="this.form.submit()">
           <option value="">All organizations</option>

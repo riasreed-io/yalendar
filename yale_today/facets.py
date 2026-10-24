@@ -65,6 +65,48 @@ def channel_for(event: dict) -> str:
     return SOURCE_CHANNEL.get(event.get("source") or "", "public")
 
 
+# Suffixes that are boilerplate rather than part of a unit's name.
+UNIT_SUFFIX = re.compile(
+    r"\s*[-–—]?\s*(an?\s+undergraduate\s+organization|a\s+student\s+org\w*"
+    r"|inc\.?|at\s+yale\s+university)\s*$",
+    re.I,
+)
+
+
+def unit_names(event: dict) -> list[str]:
+    """Every Yale unit an event belongs to, not just the first.
+
+    Localist returns multiple groups per event ("Yale Arts, Yale University
+    Art Gallery"); keeping only the first made an event invisible when
+    filtering by any of its other units.
+    """
+    raw = event.get("host") or ""
+    names: list[str] = []
+    for part in str(raw).split(","):
+        name = UNIT_SUFFIX.sub("", part.strip()).strip(" -–—")
+        # Re-joins names that legitimately contain a comma, e.g. "... , Inc."
+        if len(name) < 2:
+            continue
+        if name not in names:
+            names.append(name)
+    if not names:
+        source = event.get("source") or ""
+        if source == "athletics":
+            return ["Yale Athletics"]
+        if source == "localist":
+            return ["Yale Events"]
+        if source == "nhfpl":
+            return ["New Haven Free Public Library"]
+        if source == "unh":
+            return ["University of New Haven"]
+        return ["Unlisted group"]
+    return names
+
+
+def unit_slug(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:60]
+
+
 def org_name(event: dict) -> str:
     host = (event.get("host") or "").split(",")[0].strip()
     host = ORG_CLEAN.sub("", host).strip(" -")
@@ -105,6 +147,9 @@ def enrich(events: list[dict]) -> list[dict]:
         event["channel_label"] = CHANNEL_LABELS[event["channel"]]
         event["source_label"] = SOURCE_LABELS.get(event.get("source") or "", event.get("source") or "")
         event["org"] = org_name(event)
+        units = unit_names(event)
+        event["units"] = units
+        event["unit_slugs"] = [unit_slug(u) for u in units]
         slug, label = department_for(event)
         event["dept"] = slug
         event["dept_label"] = label
@@ -128,6 +173,7 @@ def apply_filters(
     dept=None,
     org=None,
     cat=None,
+    unit=None,
 ) -> list[dict]:
     enrich(events)
     out = events
@@ -135,12 +181,15 @@ def apply_filters(
     depts = _as_set(dept)
     orgs = _as_set(org)
     cats = _as_set(cat)
+    units = _as_set(unit)
     if channels:
         out = [e for e in out if e["channel"] in channels]
     if depts:
         out = [e for e in out if e["dept"] in depts]
     if orgs:
         out = [e for e in out if e["org"] in orgs]
+    if units:
+        out = [e for e in out if any(u in units for u in e.get("unit_slugs") or [])]
     if cats:
         out = [e for e in out if e["category"] in cats]
     return out
@@ -247,7 +296,12 @@ def facet_options(events: list[dict], *, full: bool = False) -> dict:
     orgs: set[str] = set()
     channels: dict[str, int] = defaultdict(int)
     cats: dict[str, int] = defaultdict(int)
+    unit_counts: dict[str, int] = defaultdict(int)
+    unit_labels: dict[str, str] = {}
     for event in events:
+        for slug, label in zip(event.get("unit_slugs") or [], event.get("units") or []):
+            unit_counts[slug] += 1
+            unit_labels.setdefault(slug, label)
         depts[event["dept"]] = event["dept_label"]
         dept_counts[event["dept"]] += 1
         orgs.add(event["org"])
@@ -265,7 +319,15 @@ def facet_options(events: list[dict], *, full: bool = False) -> dict:
         for slug, label in CATEGORY_ORDER
         if full or cats.get(slug, 0)
     ]
+    unit_rows = sorted(
+        (
+            {"slug": slug, "label": label, "count": unit_counts[slug]}
+            for slug, label in unit_labels.items()
+        ),
+        key=lambda x: (-x["count"], x["label"].lower()),
+    )
     return {
+        "units": unit_rows,
         "departments": departments,
         "orgs": sorted(orgs, key=str.lower),
         "channels": [

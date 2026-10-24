@@ -107,7 +107,21 @@ def _probe(page, platform: Platform) -> PlatformCheck:
     # Signed in is either an explicit logout link, or - since these sites put
     # logout behind a JS menu - landing on a real page with no login links
     # left. Signed out always renders a page titled "Login".
-    check.signed_in = logout_links > 0 or (title != "login" and login_links == 0)
+    # A CAS or Duo page is mid-handshake, not a destination: it has no login
+    # links and is not titled "Login", so it would otherwise read as success.
+    url = (page.url or "").lower()
+    in_handshake = (
+        "central authentication" in title
+        or "duo" in title
+        or "/cas" in url
+        or "duosecurity" in url
+        or "auth.yale.edu" in url
+        or "secure.its.yale.edu" in url
+    )
+    check.signed_in = (
+        not in_handshake
+        and (logout_links > 0 or (title != "login" and login_links == 0))
+    )
 
     try:
         response = page.request.get(f"{platform.list_url}?range=0&limit=50", timeout=30000)
@@ -128,6 +142,7 @@ def _probe(page, platform: Platform) -> PlatformCheck:
             check.detail += f"; {check.private_rows} venues still hidden"
     else:
         check.detail = (
+            "still on the CAS/Duo handshake" if in_handshake else
             f"signed out (title={title!r}, {login_links} login links, "
             f"{logout_links} logout links)"
         )
@@ -157,17 +172,19 @@ def check_session(headed: bool = False) -> SessionReport:
     return report
 
 
-def interactive_login(confirm=input) -> SessionReport:
-    """Open a real browser and wait for you to sign in. No timer.
+def interactive_login(wait_seconds: int = 900, poll_seconds: float = 3.0) -> SessionReport:
+    """Open a real browser and watch for you to sign in.
 
-    You type your own NetID and approve Duo at your own pace; the script
-    blocks on Enter rather than a countdown, then proves the session works
-    before saving. Credentials are never read, typed or stored by this code.
+    Nothing to press. The script polls the platform until it sees an
+    authenticated session, so finishing Duo is the only step - there is no
+    keypress to miss and no countdown to lose. Credentials are never read,
+    typed or stored by this code.
     """
+    import time
+
     from playwright.sync_api import sync_playwright
 
-    PROFILE_DIR.mkdir(parents=True, exist_ok=True)
-    report = SessionReport(profile=str(PROFILE_DIR))
+    report = SessionReport(profile=str(STATE_PATH))
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, args=["--start-maximized"])
@@ -181,28 +198,38 @@ def interactive_login(confirm=input) -> SessionReport:
                 print(f"\n{'=' * 64}\n{platform.name}\n{'=' * 64}", flush=True)
                 page.goto(platform.home, wait_until="domcontentloaded", timeout=60000)
 
-                existing = _probe(page, platform)
-                if existing.signed_in:
-                    print(f"  Already signed in from a previous session "
-                          f"({existing.rows} events visible). Nothing to do.", flush=True)
-                    report.checks.append(existing)
-                    continue
-
-                print("  Sign in in the browser window that just opened.", flush=True)
-                print("  Take as long as you need - approve Duo on your phone.", flush=True)
-                print("  The window will NOT close on you and there is no timer.", flush=True)
-                confirm(f"  Press Enter here once you are fully signed in to {platform.name}... ")
-
                 check = _probe(page, platform)
                 if check.signed_in:
+                    print(f"  Already signed in ({check.rows} events visible).", flush=True)
+                    report.checks.append(check)
+                    continue
+
+                print("  Sign in in the browser window. Approve Duo on your phone.", flush=True)
+                print("  Nothing to press here - this detects it automatically.", flush=True)
+
+                deadline = time.time() + wait_seconds
+                announced = 0
+                while time.time() < deadline:
+                    time.sleep(poll_seconds)
+                    try:
+                        check = _probe(page, platform)
+                    except Exception:
+                        continue
+                    if check.signed_in:
+                        break
+                    waited = int(wait_seconds - (deadline - time.time()))
+                    if waited // 60 > announced:
+                        announced = waited // 60
+                        print(f"  still waiting ({announced} min)...", flush=True)
+
+                if check.signed_in:
                     print(f"  CONFIRMED: signed in. {check.rows} events visible"
-                          f"{f', {check.private_rows} of them sign-in only' if check.private_rows else ''}.",
+                          f"{f', {check.private_rows} sign-in only' if check.private_rows else ''}.",
                           flush=True)
                 else:
-                    print(f"  NOT signed in yet: {check.detail}", flush=True)
+                    print(f"  Timed out after {wait_seconds // 60} min: {check.detail}", flush=True)
                 report.checks.append(check)
-            # Capture cookies (including session cookies) so later headless
-            # runs need no Duo.
+
             context.storage_state(path=str(STATE_PATH))
             print(f"\n  Session saved to {STATE_PATH.name}.", flush=True)
         finally:

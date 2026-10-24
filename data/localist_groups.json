@@ -1,0 +1,1118 @@
+[
+  {
+    "id": 46756205898254,
+    "name": "Accessibility at Yale",
+    "slug": "accessibility-at-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756205898254"
+  },
+  {
+    "id": 46756205936143,
+    "name": "Advanced Prototyping Center",
+    "slug": "advanced-prototyping-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756205936143"
+  },
+  {
+    "id": 46056711415779,
+    "name": "Afro-American Cultural Center",
+    "slug": "afro-american-cultural-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711415779"
+  },
+  {
+    "id": 50878563450977,
+    "name": "AI at Yale",
+    "slug": "ai-at-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50878563450977"
+  },
+  {
+    "id": 46756205955600,
+    "name": "American Studies",
+    "slug": "american-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756205955600"
+  },
+  {
+    "id": 46056711349213,
+    "name": "ARCHAIA",
+    "slug": "archaia",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711349213"
+  },
+  {
+    "id": 46056711399393,
+    "name": "Asian American Cultural Center",
+    "slug": "asian-american-cultural-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711399393"
+  },
+  {
+    "id": 46012336618872,
+    "name": "Asian Network at Yale",
+    "slug": "asian-network-at-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46012336618872"
+  },
+  {
+    "id": 46756205971985,
+    "name": "Berkeley Divinity School at Yale",
+    "slug": "berkeley-divinity-school-at-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756205971985"
+  },
+  {
+    "id": 52082868624083,
+    "name": "Black Studies",
+    "slug": "black-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=52082868624083"
+  },
+  {
+    "id": 46056711545844,
+    "name": "Buddhist Studies Initiative",
+    "slug": "buddhist-studies-initiative",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711545844"
+  },
+  {
+    "id": 46703483759200,
+    "name": "Business Updates",
+    "slug": "business-updates",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46703483759200"
+  },
+  {
+    "id": 46756205987346,
+    "name": "Center for Business and the Environment",
+    "slug": "center-for-business-and-the-environment",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756205987346"
+  },
+  {
+    "id": 46056711380959,
+    "name": "Center for Collaborative Arts and Media (CCAM)",
+    "slug": "center-for-collaborative-arts-and-media",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711380959"
+  },
+  {
+    "id": 46056711526385,
+    "name": "Center for Historical Enquiry & the Social Sciences (YaleCHESS)",
+    "slug": "center-for-historicaleenquiry-the-social-sciences-yalechess",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711526385"
+  },
+  {
+    "id": 46756206001683,
+    "name": "Center for International and Professional Experience",
+    "slug": "center-for-international-and-professional-experience",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206001683"
+  },
+  {
+    "id": 46756206021140,
+    "name": "Center for Language Study",
+    "slug": "center-for-language-study",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206021140"
+  },
+  {
+    "id": 46756206038549,
+    "name": "Center for the Study of American Politics",
+    "slug": "center-for-the-study-of-american-politics",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206038549"
+  },
+  {
+    "id": 46667015823552,
+    "name": "Center for the Study of Race Indigeneity and Transnational Migration (RITM)",
+    "slug": "center-for-the-study-of-race-indigeneity-and-transnational-migration-ritm",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46667015823552"
+  },
+  {
+    "id": 46056711821321,
+    "name": "Center for the Study of Representative Institutions (YCRI)",
+    "slug": "center-for-the-study-of-representative-institutions-ycri",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711821321"
+  },
+  {
+    "id": 46756206462510,
+    "name": "Center Initiative on Religion Politics and Society",
+    "slug": "center-initiative-on-religion-politics-and-society",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206462510"
+  },
+  {
+    "id": 46056711389152,
+    "name": "Chemistry Department",
+    "slug": "chemistry-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711389152"
+  },
+  {
+    "id": 46756206059030,
+    "name": "Cognitive Science Program",
+    "slug": "cognitive-science-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206059030"
+  },
+  {
+    "id": 46056711553013,
+    "name": "Committee on Canadian Studies",
+    "slug": "committee-on-canadian-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711553013"
+  },
+  {
+    "id": 50701979766780,
+    "name": "Conflict & Identity Lab",
+    "slug": "conflict-identity-lab",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50701979766780"
+  },
+  {
+    "id": 50701982080783,
+    "name": "Conflict, Resilience, and Health Program",
+    "slug": "conflict-resilience-and-health-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50701982080783"
+  },
+  {
+    "id": 51038967399061,
+    "name": "COSMOS",
+    "slug": "cosmos",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=51038967399061"
+  },
+  {
+    "id": 46056711533554,
+    "name": "Council on African Studies (CAS)",
+    "slug": "council-on-african-studies-cas",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711533554"
+  },
+  {
+    "id": 46013278408511,
+    "name": "Council on East Asian Studies",
+    "slug": "council-on-east-asian-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46013278408511"
+  },
+  {
+    "id": 46056711590903,
+    "name": "Council on East Asian Studies at Yale University (CEAS)",
+    "slug": "council-on-east-asian-studies-at-yale-university-ceas",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711590903"
+  },
+  {
+    "id": 46056711651328,
+    "name": "Council on Latin American & Iberian Studies (CLAIS)",
+    "slug": "council-on-latin-american-iberian-studies-clais",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711651328"
+  },
+  {
+    "id": 46056711574518,
+    "name": "Council on Middle East Studies (CMES)",
+    "slug": "council-on-middle-east-studies-cmes",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711574518"
+  },
+  {
+    "id": 46056711728134,
+    "name": "Council on Southeast Asia Studies",
+    "slug": "council-on-southeast-asia-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711728134"
+  },
+  {
+    "id": 46666067302944,
+    "name": "Cybersecurity",
+    "slug": "cybersecurity",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46666067302944"
+  },
+  {
+    "id": 50700954501270,
+    "name": "Data-Intensive Social Science Center",
+    "slug": "data-intensive-social-science-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50700954501270"
+  },
+  {
+    "id": 46756206667322,
+    "name": "David Geffen School of Drama",
+    "slug": "school-of-drama",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206667322"
+  },
+  {
+    "id": 46756206076439,
+    "name": "Democracy in America",
+    "slug": "democracy-in-america",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206076439"
+  },
+  {
+    "id": 47066327146991,
+    "name": "Department of Anthropology",
+    "slug": "department-of-anthropology",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=47066327146991"
+  },
+  {
+    "id": 50824959269185,
+    "name": "Department of Astronomy",
+    "slug": "department-of-astronomy",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50824959269185"
+  },
+  {
+    "id": 52877227911610,
+    "name": "Department of Classics",
+    "slug": "department-of-classics",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=52877227911610"
+  },
+  {
+    "id": 49461961603064,
+    "name": "Department of Comparative Literature",
+    "slug": "comparative-literature",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=49461961603064"
+  },
+  {
+    "id": 50294102762744,
+    "name": "Department of History",
+    "slug": "department-of-history",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50294102762744"
+  },
+  {
+    "id": 50215749518505,
+    "name": "Department of Italian Studies",
+    "slug": "department-of-italian-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50215749518505"
+  },
+  {
+    "id": 50090413046735,
+    "name": "Department of Mathematics",
+    "slug": "department-of-mathematics",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50090413046735"
+  },
+  {
+    "id": 50959139650458,
+    "name": "Department of Near Eastern Languages and Civilizations",
+    "slug": "department-of-near-eastern-languages-and-civilizations",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50959139650458"
+  },
+  {
+    "id": 46756206089752,
+    "name": "Department of Slavic Languages and Literatures",
+    "slug": "department-of-slavic-languages-and-literatures",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206089752"
+  },
+  {
+    "id": 50772321686137,
+    "name": "Department of Spanish and Portuguese",
+    "slug": "department-of-spanish-and-portuguese",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50772321686137"
+  },
+  {
+    "id": 49736560046521,
+    "name": "Department of Statistics and Data Science",
+    "slug": "department-of-statistics-and-data-science",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=49736560046521"
+  },
+  {
+    "id": 46756206107161,
+    "name": "Digital Dissemination and Online Education Office",
+    "slug": "digital-dissemination-and-online-education-office",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206107161"
+  },
+  {
+    "id": 49461820211831,
+    "name": "Digital Ethics Center",
+    "slug": "digital-ethics-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=49461820211831"
+  },
+  {
+    "id": 46056711430117,
+    "name": "Disability Alliance At Yale (DAY)",
+    "slug": "disability-alliance-at-yale-day",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711430117"
+  },
+  {
+    "id": 50294105484019,
+    "name": "Early Modern Studies",
+    "slug": "early-modern-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50294105484019"
+  },
+  {
+    "id": 50702042101609,
+    "name": "East Asian Languages and Literatures",
+    "slug": "east-asian-languages-and-literatures",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50702042101609"
+  },
+  {
+    "id": 46756206120474,
+    "name": "Ecology and Evolutionary Biology Department",
+    "slug": "ecology-and-evolutionary-biology-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206120474"
+  },
+  {
+    "id": 46056711437286,
+    "name": "Economics Department",
+    "slug": "economics-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711437286"
+  },
+  {
+    "id": 46756206133787,
+    "name": "English Department",
+    "slug": "english-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206133787"
+  },
+  {
+    "id": 46756206147100,
+    "name": "Entrepreneurship at Yale",
+    "slug": "entrepreneurship-at-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206147100"
+  },
+  {
+    "id": 46056711444455,
+    "name": "Environmental Humanities Initiative",
+    "slug": "environmental-humanities-initiative",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711444455"
+  },
+  {
+    "id": 46056711599096,
+    "name": "European Studies Council",
+    "slug": "european-studies-council",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711599096"
+  },
+  {
+    "id": 46056711607289,
+    "name": "European Union Studies",
+    "slug": "european-union-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711607289"
+  },
+  {
+    "id": 46756206182941,
+    "name": "Fellowship Program",
+    "slug": "fellowship-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206182941"
+  },
+  {
+    "id": 46756206202398,
+    "name": "Film and Media Studies Program",
+    "slug": "film-and-media-studies-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206202398"
+  },
+  {
+    "id": 50293954189694,
+    "name": "Film at Yale",
+    "slug": "film-at-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50293954189694"
+  },
+  {
+    "id": 46756206239263,
+    "name": "First-Generation Low-Income Initiative (FGLI)",
+    "slug": "first-generation-low-income-initiative-fgli",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206239263"
+  },
+  {
+    "id": 46056711614458,
+    "name": "Fox International Fellowship",
+    "slug": "fox-international-fellowship",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711614458"
+  },
+  {
+    "id": 46756206253600,
+    "name": "Franke Program in Science and the Humanities",
+    "slug": "franke-program-in-science-and-the-humanities",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206253600"
+  },
+  {
+    "id": 46756206266913,
+    "name": "French Department",
+    "slug": "french-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206266913"
+  },
+  {
+    "id": 46756206282274,
+    "name": "Funding",
+    "slug": "funding",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206282274"
+  },
+  {
+    "id": 46056711451624,
+    "name": "Future Leaders of Yale",
+    "slug": "future-leaders-of-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711451624"
+  },
+  {
+    "id": 46056711626748,
+    "name": "Genocide Studies Program",
+    "slug": "genocide-studies-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711626748"
+  },
+  {
+    "id": 46056711620603,
+    "name": "Gilder Lehrman Center for the Study of Slavery Resistance and Abolition",
+    "slug": "gilder-lehrman-center-for-the-study-of-slavery-resistance-and-abolition",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711620603"
+  },
+  {
+    "id": 46756206296611,
+    "name": "Global Health",
+    "slug": "global-health",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206296611"
+  },
+  {
+    "id": 46756206352935,
+    "name": "Global Justice Program",
+    "slug": "global-justice-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206352935"
+  },
+  {
+    "id": 46056711459817,
+    "name": "Graduate School of Arts and Sciences",
+    "slug": "graduate-school-of-arts-and-sciences",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711459817"
+  },
+  {
+    "id": 50959141222302,
+    "name": "Hebrew Program",
+    "slug": "hebrew-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50959141222302"
+  },
+  {
+    "id": 46056711632893,
+    "name": "Hellenic Studies Program",
+    "slug": "hellenic-studies-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711632893"
+  },
+  {
+    "id": 46056711466986,
+    "name": "History of Art",
+    "slug": "history-of-art",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711466986"
+  },
+  {
+    "id": 50701953049820,
+    "name": "Indigenous Leaders At Yale",
+    "slug": "indigenous-leaders-at-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50701953049820"
+  },
+  {
+    "id": 46056711476203,
+    "name": "Information Technology Services",
+    "slug": "information-technology-services",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711476203"
+  },
+  {
+    "id": 46703488549985,
+    "name": "Institute for the Preservation of Cultural Heritage",
+    "slug": "institute-for-the-preservation-of-cultural-heritage",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46703488549985"
+  },
+  {
+    "id": 46056711482348,
+    "name": "Institute of Sacred Music",
+    "slug": "institute-of-sacred-music",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711482348"
+  },
+  {
+    "id": 46056711490541,
+    "name": "Institution for Social and Policy Studies",
+    "slug": "institution-for-social-and-policy-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711490541"
+  },
+  {
+    "id": 46056711639038,
+    "name": "InterAsia Initiative",
+    "slug": "interasia-initiative",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711639038"
+  },
+  {
+    "id": 46056711504879,
+    "name": "Jackson School of Global Affairs",
+    "slug": "jackson-school-of-global-affairs",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711504879"
+  },
+  {
+    "id": 46756206311972,
+    "name": "Jewish Studies Program",
+    "slug": "jewish-studies-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206311972"
+  },
+  {
+    "id": 50701955336380,
+    "name": "Jews of Yale (JOY)",
+    "slug": "jews-of-yale-joy",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50701955336380"
+  },
+  {
+    "id": 46756206324261,
+    "name": "Kimball Smith Series",
+    "slug": "kimball-smith-series",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206324261"
+  },
+  {
+    "id": 46056711409634,
+    "name": "La Casa Cultural Center",
+    "slug": "la-casa-cultural-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711409634"
+  },
+  {
+    "id": 46056711657473,
+    "name": "Leitner Program",
+    "slug": "leitner-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711657473"
+  },
+  {
+    "id": 46056711511024,
+    "name": "LGBTQ Affinity Group",
+    "slug": "lgbtq-affinity-group",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711511024"
+  },
+  {
+    "id": 46756206339622,
+    "name": "Linguistics Department",
+    "slug": "linguistics-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206339622"
+  },
+  {
+    "id": 46056711669762,
+    "name": "MacMillan Center",
+    "slug": "macmillan-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711669762"
+  },
+  {
+    "id": 46056711983126,
+    "name": "Maurice R. Greenberg World Fellows Program",
+    "slug": "maurice-r-greenberg-world-fellows-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711983126"
+  },
+  {
+    "id": 53683354158920,
+    "name": "Medieval Studies",
+    "slug": "medieval-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=53683354158920"
+  },
+  {
+    "id": 46056711833610,
+    "name": "Microbial Sciences Institute",
+    "slug": "microbial-sciences-institute",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711833610"
+  },
+  {
+    "id": 50959142483305,
+    "name": "Modern Arabic Program",
+    "slug": "modern-arabic-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50959142483305"
+  },
+  {
+    "id": 46756206370344,
+    "name": "Modern Europe Colloquium",
+    "slug": "modern-europe-colloquium",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206370344"
+  },
+  {
+    "id": 46056711844875,
+    "name": "Molecular Biophysics and Biochemistry Department",
+    "slug": "molecular-biophysics-and-biochemistrye",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711844875"
+  },
+  {
+    "id": 46756206518833,
+    "name": "Molecular Cellular and Developmental Biology",
+    "slug": "molecular-cellular-and-developmental-biology",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206518833"
+  },
+  {
+    "id": 46056711422948,
+    "name": "Native American Cultural Center",
+    "slug": "native-american-cultural-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711422948"
+  },
+  {
+    "id": 50702000315124,
+    "name": "Nuclear Security Program",
+    "slug": "nuclear-security-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50702000315124"
+  },
+  {
+    "id": 46756206532146,
+    "name": "Office of Career Strategy",
+    "slug": "office-of-career-strategy",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206532146"
+  },
+  {
+    "id": 46756206549555,
+    "name": "Office of Community Liaison",
+    "slug": "office-of-community-liaison",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206549555"
+  },
+  {
+    "id": 46756206564916,
+    "name": "Office of International Students and Scholars",
+    "slug": "office-of-international-students-and-scholars",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206564916"
+  },
+  {
+    "id": 46756206582325,
+    "name": "Office of LGBTQ Resources",
+    "slug": "office-of-lgbtq-resources",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206582325"
+  },
+  {
+    "id": 47605410013088,
+    "name": "Office of New Haven Affairs (ONHA)",
+    "slug": "office-of-new-haven-affairs-onha",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=47605410013088"
+  },
+  {
+    "id": 46056711851020,
+    "name": "Office of Public Affairs and Communications (OPAC)",
+    "slug": "office-of-public-affairs-and-communications-opac",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711851020"
+  },
+  {
+    "id": 46756206401066,
+    "name": "Office of Visiting Scholars Exchanges and Fellowships",
+    "slug": "office-of-visiting-scholars-exchanges-and-fellowships",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206401066"
+  },
+  {
+    "id": 50959143629288,
+    "name": "Persian Program",
+    "slug": "persian-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50959143629288"
+  },
+  {
+    "id": 46056711858189,
+    "name": "Philosophy Department",
+    "slug": "philosophy-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711858189"
+  },
+  {
+    "id": 46056711871502,
+    "name": "Physics Department",
+    "slug": "physics-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711871502"
+  },
+  {
+    "id": 46756206596662,
+    "name": "Planetary Solutions",
+    "slug": "planetary-solutions",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206596662"
+  },
+  {
+    "id": 46756206610999,
+    "name": "Political Science Department",
+    "slug": "political-science-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206610999"
+  },
+  {
+    "id": 46756206628408,
+    "name": "Political Theory Workshop",
+    "slug": "political-theory-workshop",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206628408"
+  },
+  {
+    "id": 47541780153909,
+    "name": "Political Violence and its Legacies (PVL)",
+    "slug": "political-violence-and-its-legacies-pvl",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=47541780153909"
+  },
+  {
+    "id": 50701211919772,
+    "name": "Poynter Fellowship in Journalism",
+    "slug": "poynter-fellowship-in-journalism",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50701211919772"
+  },
+  {
+    "id": 46056711539699,
+    "name": "Program in Agrarian Studies",
+    "slug": "program-in-agrarian-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711539699"
+  },
+  {
+    "id": 50959145794901,
+    "name": "Program in Egyptology",
+    "slug": "program-in-egyptology",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50959145794901"
+  },
+  {
+    "id": 50815888431193,
+    "name": "Program in Global Participatory Research and Ethics",
+    "slug": "program-in-global-participatory-research-and-ethics",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50815888431193"
+  },
+  {
+    "id": 46056711646207,
+    "name": "Program in Iranian Studies",
+    "slug": "program-in-iranian-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711646207"
+  },
+  {
+    "id": 46756206432812,
+    "name": "Program on Democracy",
+    "slug": "program-on-democracy",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206432812"
+  },
+  {
+    "id": 46756206386729,
+    "name": "Program on Order Conflict and Violence",
+    "slug": "program-on-order-conflict-and-violence",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206386729"
+  },
+  {
+    "id": 46056711682051,
+    "name": "Program on Peace and Development",
+    "slug": "program-on-peace-and-development",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711682051"
+  },
+  {
+    "id": 46056711694340,
+    "name": "Program on Refugees Forced Displacement and Humanitarian Responses (PRFDHR)",
+    "slug": "program-on-refugees-forced-displacement-and-humanitarian-responses-prfdhr",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711694340"
+  },
+  {
+    "id": 46756206417451,
+    "name": "Programs in International Educational Resources (PIER)",
+    "slug": "programs-in-international-educational-resources-pier",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206417451"
+  },
+  {
+    "id": 53630535766438,
+    "name": "Psychology Department",
+    "slug": "psychology-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=53630535766438"
+  },
+  {
+    "id": 46756206648889,
+    "name": "Public Humanities",
+    "slug": "public-humanities",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206648889"
+  },
+  {
+    "id": 46756206447149,
+    "name": "Religious Freedom and Society in Africa",
+    "slug": "religious-freedom-and-society-in-africa",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206447149"
+  },
+  {
+    "id": 46056711878671,
+    "name": "Religious Studies",
+    "slug": "religious-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711878671"
+  },
+  {
+    "id": 46056711721989,
+    "name": "Russian East European and Eurasian Studies (REEES)",
+    "slug": "russian-east-european-and-eurasian-studies-reees",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711721989"
+  },
+  {
+    "id": 46056711888912,
+    "name": "Saint Thomas More",
+    "slug": "saint-thomas-more",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711888912"
+  },
+  {
+    "id": 46756206478895,
+    "name": "Salisbury at 175",
+    "slug": "salisbury-at-175",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206478895"
+  },
+  {
+    "id": 50702011421835,
+    "name": "School of Architecture",
+    "slug": "school-of-architecture",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50702011421835"
+  },
+  {
+    "id": 46056711896081,
+    "name": "School of Art",
+    "slug": "school-of-art",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711896081"
+  },
+  {
+    "id": 46056711925778,
+    "name": "School of Management",
+    "slug": "school-of-management",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711925778"
+  },
+  {
+    "id": 46756206683707,
+    "name": "School of Music",
+    "slug": "school-of-music",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206683707"
+  },
+  {
+    "id": 46756206698044,
+    "name": "School of Nursing",
+    "slug": "school-of-nursing",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206698044"
+  },
+  {
+    "id": 50727691562758,
+    "name": "School of the Environment",
+    "slug": "school-of-the-environment",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50727691562758"
+  },
+  {
+    "id": 46756206714429,
+    "name": "Sociology Department",
+    "slug": "sociology-department",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206714429"
+  },
+  {
+    "id": 46056711756807,
+    "name": "South Asian Studies Council",
+    "slug": "south-asian-studies-council",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711756807"
+  },
+  {
+    "id": 46756206729790,
+    "name": "Sustainable Food Program",
+    "slug": "sustainable-food-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206729790"
+  },
+  {
+    "id": 46056711932947,
+    "name": "The Yale Review",
+    "slug": "the-yale-review",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711932947"
+  },
+  {
+    "id": 46756206745151,
+    "name": "Theater Studies",
+    "slug": "theater-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206745151"
+  },
+  {
+    "id": 46056711769096,
+    "name": "Translation Initiative",
+    "slug": "translation-initiativee",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711769096"
+  },
+  {
+    "id": 46756206760512,
+    "name": "Tsai Center for Innovative Thinking at Yale",
+    "slug": "tsai-center-for-innovative-thinking-at-yale",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206760512"
+  },
+  {
+    "id": 50959144773328,
+    "name": "Turkish Program",
+    "slug": "turkish-program",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50959144773328"
+  },
+  {
+    "id": 46056711945236,
+    "name": "Whitney Humanities Center",
+    "slug": "whitney-humanities-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711945236"
+  },
+  {
+    "id": 46756206777921,
+    "name": "Women Gender and Sexuality Studies",
+    "slug": "women-gender-and-sexuality-studies",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206777921"
+  },
+  {
+    "id": 46056711973909,
+    "name": "Working Women's Network",
+    "slug": "working-womens-network",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056711973909"
+  },
+  {
+    "id": 46056712014871,
+    "name": "Wright Laboratory",
+    "slug": "wright-laboratory",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712014871"
+  },
+  {
+    "id": 52496491999008,
+    "name": "Wu Tsai Institute",
+    "slug": "wu-tsai-institute",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=52496491999008"
+  },
+  {
+    "id": 46756206503472,
+    "name": "Y-RISE",
+    "slug": "y-rise",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206503472"
+  },
+  {
+    "id": 46056712022040,
+    "name": "Yale African American Affinity Group (YAAA)",
+    "slug": "yale-african-american-affinity-group-yaaa",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712022040"
+  },
+  {
+    "id": 46056712031257,
+    "name": "Yale Alumni Association",
+    "slug": "yale-alumni-association",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712031257"
+  },
+  {
+    "id": 46056712043546,
+    "name": "Yale Arts",
+    "slug": "yale-arts",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712043546"
+  },
+  {
+    "id": 46756206792258,
+    "name": "Yale Arts Workshops",
+    "slug": "yale-arts-workshops",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206792258"
+  },
+  {
+    "id": 46056712052763,
+    "name": "Yale Bands",
+    "slug": "yale-bands",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712052763"
+  },
+  {
+    "id": 46056712065052,
+    "name": "Yale Center for British Art",
+    "slug": "yale-center-for-british-art",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712065052"
+  },
+  {
+    "id": 52215073538114,
+    "name": "Yale Center for Natural Carbon Capture",
+    "slug": "yale-center-for-natural-carbon-capture",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=52215073538114"
+  },
+  {
+    "id": 46056712080413,
+    "name": "Yale Center for Research Computing (YCRC)",
+    "slug": "yale-center-for-research-computing-ycrc",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712080413"
+  },
+  {
+    "id": 51197546685011,
+    "name": "Yale Center for the Invisible Universe (YCIU)",
+    "slug": "yale-center-for-the-invisible-universe-yciu",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=51197546685011"
+  },
+  {
+    "id": 46756206812739,
+    "name": "Yale Climate and Energy Institute",
+    "slug": "yale-climate-and-energy-institute",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206812739"
+  },
+  {
+    "id": 46756206834244,
+    "name": "Yale College",
+    "slug": "yale-college",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206834244"
+  },
+  {
+    "id": 46756206856773,
+    "name": "Yale College Study Abroad",
+    "slug": "yale-college-study-abroad",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206856773"
+  },
+  {
+    "id": 46056712088606,
+    "name": "Yale Divinity School",
+    "slug": "yale-divinity-school",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712088606"
+  },
+  {
+    "id": 46056712095775,
+    "name": "Yale Glee Club",
+    "slug": "yale-glee-club",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712095775"
+  },
+  {
+    "id": 45811180571509,
+    "name": "Yale Health",
+    "slug": "yale_health",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=45811180571509"
+  },
+  {
+    "id": 46756206879302,
+    "name": "Yale Hospitality",
+    "slug": "yale-hospitality",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206879302"
+  },
+  {
+    "id": 46756206894663,
+    "name": "Yale Institute for Network Science",
+    "slug": "yale-institute-for-network-science",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206894663"
+  },
+  {
+    "id": 46756206911048,
+    "name": "Yale Instrumentation",
+    "slug": "yale-instrumentation",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206911048"
+  },
+  {
+    "id": 46756206927433,
+    "name": "Yale Journalism Initiative",
+    "slug": "yale-journalism-initiative",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206927433"
+  },
+  {
+    "id": 46056712103968,
+    "name": "Yale Latino Networking Group (YLNG)",
+    "slug": "yale-latino-networking-group-ylng",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712103968"
+  },
+  {
+    "id": 46056712145956,
+    "name": "Yale Library",
+    "slug": "yale-university-library",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712145956"
+  },
+  {
+    "id": 46756206952010,
+    "name": "Yale Online",
+    "slug": "yale-online",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206952010"
+  },
+  {
+    "id": 53692812181481,
+    "name": "Yale Peabody Museum",
+    "slug": "yale-peabody-museum",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=53692812181481"
+  },
+  {
+    "id": 46056712112161,
+    "name": "Yale Program for the Study of Antisemitism (YPSA)",
+    "slug": "yale-program-for-the-study-of-antisemitism-ypsa",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712112161"
+  },
+  {
+    "id": 50719739787200,
+    "name": "Yale Quantum Institute",
+    "slug": "yale-quantum-institute",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50719739787200"
+  },
+  {
+    "id": 46056712122402,
+    "name": "Yale Schwarzman Center",
+    "slug": "yale-schwarzman-center",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712122402"
+  },
+  {
+    "id": 46756206971467,
+    "name": "Yale Summer Session",
+    "slug": "yale-summer-session",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206971467"
+  },
+  {
+    "id": 46056712130595,
+    "name": "Yale Symphony Orchestra (YSO)",
+    "slug": "yale-symphony-orchestra-yso",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712130595"
+  },
+  {
+    "id": 46756206985804,
+    "name": "Yale University Art Gallery",
+    "slug": "yale-university-art-gallery",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756206985804"
+  },
+  {
+    "id": 50570062697974,
+    "name": "Yale Ventures",
+    "slug": "yale-ventures",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=50570062697974"
+  },
+  {
+    "id": 46056712159269,
+    "name": "Yale Veterans Network (YVN)",
+    "slug": "yale-veterans-network-yvn",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712159269"
+  },
+  {
+    "id": 46756207004237,
+    "name": "Yale Well",
+    "slug": "yale-well",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756207004237"
+  },
+  {
+    "id": 46056712166438,
+    "name": "Yale West Campus",
+    "slug": "yale-west-campus",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46056712166438"
+  },
+  {
+    "id": 46756207021646,
+    "name": "Yale Work + Life",
+    "slug": "yale-worklife",
+    "events_url": "https://events.yale.edu/api/2/events?group_id=46756207021646"
+  }
+]
