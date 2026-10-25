@@ -697,6 +697,7 @@ def week_view(
     mini = build_mini_month(
         shown,
         today,
+        selected=week_start,
         week_start=week_start,
         click=lambda d: href(start=d.isoformat(), cal=d.isoformat()[:7]),
         month_nav=lambda m: href(cal=m),
