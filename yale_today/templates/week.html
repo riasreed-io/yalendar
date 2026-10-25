@@ -66,23 +66,32 @@
 
     <div class="week-grid">
       {% for col in columns %}
-      <section class="week-col {% if col.today %}today{% endif %}">
-        <a class="week-head" href="/?day={{ col.date }}">
-          <span>{{ col.label }}</span>
-          <strong>{{ col.long }}</strong>
-          <em>{{ col.events|length }}</em>
+      <section class="week-col{% if col.today %} today{% endif %}">
+        <a class="week-head" href="/?day={{ col.date }}&amp;after=all">
+          <span class="week-dow">{{ col.label }}</span>
+          <span class="week-date">{{ col.long.split(' ')[1] }}</span>
+          <span class="week-count">{{ col.count }}</span>
         </a>
-        <ol>
+        <ol class="week-list">
           {% for event in col.events %}
-          <li class="week-item ch-{{ event.channel }}">
+          <li class="week-item">
             <span class="cat-dot cat-{{ event.category }}" aria-hidden="true" title="{{ event.category_label }}"></span>
-            <span class="when">{{ event.start|when(event.all_day) }}</span>
-            {% include "_event_expand.html" %}
-            <span class="sub">{{ event.dept_label }}</span>
+            <div class="week-body">
+              <span class="week-time">{{ event.start|when(event.all_day) }}</span>
+              {% if event.url %}
+              <a class="week-title" href="{{ event.url }}" rel="noopener" target="_blank">{{ event.title }}</a>
+              {% else %}
+              <span class="week-title">{{ event.title }}</span>
+              {% endif %}
+              <span class="week-meta">{{ event.org }}</span>
+            </div>
           </li>
           {% endfor %}
+          {% if col.more %}
+          <li><a class="week-more" href="/?day={{ col.date }}&amp;after=all">{{ col.more }} more</a></li>
+          {% endif %}
           {% if not col.events %}
-          <li class="empty">No events</li>
+          <li class="week-none">Nothing scheduled</li>
           {% endif %}
         </ol>
       </section>

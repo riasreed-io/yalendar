@@ -71,27 +71,25 @@
       {% for week in weeks %}
       <div class="month-week">
         {% for cell in week %}
-        <div class="month-cell {% if not cell.in_month %}out{% endif %} {% if cell.today %}today selected{% endif %}">
-          <a class="month-num" href="/?day={{ cell.date }}">{{ cell.num }} <em>{{ cell.count }}</em></a>
+        <div class="month-cell{% if not cell.in_month %} out{% endif %}{% if cell.today %} today{% endif %}">
+          <a class="month-num" href="/?day={{ cell.date }}&amp;after=all">
+            <span class="month-daynum">{{ cell.num }}</span>
+            {% if cell.count %}<span class="month-count">{{ cell.count }}</span>{% endif %}
+          </a>
           <ul>
             {% for event in cell.events %}
-            <li class="ch-{{ event.channel }}">
-              <div class="month-event"><span class="cat-dot cat-{{ event.category }}" aria-hidden="true" title="{{ event.category_label }}"></span>
-                {% if event.url %}
-                <a href="{{ event.url }}" rel="noopener" target="_blank">{{ event.title }}</a>
-                {% else %}
-                {{ event.title }}
-                {% endif %}
-                <details class="expand tight">
-                  <summary aria-label="Show description"><span class="drop" aria-hidden="true"></span></summary>
-                  <div class="expand-body">
-                    {% if event.description %}<p class="desc">{{ event.description }}</p>{% endif %}
-                  </div>
-                </details>
-              </div>
+            <li>
+              <a class="month-event" href="{{ event.url or '/?day=' ~ cell.date ~ '&after=all' }}"
+                 {% if event.url %}rel="noopener" target="_blank"{% endif %}
+                 title="{{ event.title }}">
+                <span class="cat-dot cat-{{ event.category }}" aria-hidden="true"></span>
+                <span class="month-event-title">{{ event.title }}</span>
+              </a>
             </li>
             {% endfor %}
-            {% if cell.more %}<li class="more"><a href="/?day={{ cell.date }}">+{{ cell.more }} more</a></li>{% endif %}
+            {% if cell.more %}
+            <li><a class="month-more" href="/?day={{ cell.date }}&amp;after=all">{{ cell.more }} more</a></li>
+            {% endif %}
           </ul>
         </div>
         {% endfor %}

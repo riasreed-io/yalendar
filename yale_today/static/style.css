@@ -393,37 +393,147 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
 
 /* --------------------------------------------------------------- week */
 
-.week-grid { display: grid; grid-template-columns: repeat(7, minmax(150px, 1fr)); gap: .6rem; overflow-x: auto; padding-bottom: .5rem; }
-.week-col { background: var(--surface); border: 0; border-radius: var(--radius); padding: .85rem; box-shadow: var(--shadow-sm); min-width: 0; }
-.week-head, .week-col h3 { font-size: .8125rem; font-weight: 600; color: var(--ink-2); margin: 0 0 .6rem; }
-.week-col.today .week-head, .week-col.today h3 { color: var(--accent-ink); }
-.week-item { border: 0; border-top: 1px solid var(--line); padding: .55rem 0; font-size: .8125rem; }
-.week-item:first-of-type { border-top: 0; }
-.week-item a { color: var(--ink); font-weight: 500; }
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: .5rem;
+  align-items: start;
+}
+.week-col {
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: .4rem .4rem .5rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.week-col.today { box-shadow: 0 0 0 2px var(--accent), var(--shadow-sm); }
+
+.week-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: .3rem;
+  padding: .45rem .5rem .55rem;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: .35rem;
+}
+.week-head:hover { text-decoration: none; }
+.week-dow {
+  grid-column: 1;
+  font-size: .6875rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.week-date {
+  grid-column: 1; grid-row: 2;
+  font-size: 1.5rem; font-weight: 650; letter-spacing: -0.028em;
+  line-height: 1; font-variant-numeric: tabular-nums;
+}
+.week-col.today .week-date, .week-col.today .week-dow { color: var(--accent-ink); }
+.week-count {
+  grid-column: 2; grid-row: 2;
+  font-size: .75rem; color: var(--ink-3); font-variant-numeric: tabular-nums;
+}
+
+.week-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .1rem; }
+.week-item {
+  display: flex; gap: .4rem; align-items: flex-start;
+  min-width: 0;
+  padding: .4rem .5rem;
+  border-radius: 9px;
+  transition: background-color var(--press);
+}
+.week-item:hover { background: var(--surface-2); }
+.week-item .cat-dot { margin-top: .5rem; }
+/* min-width:0 alone is not enough: a nowrap child sets the column's
+   min-content width, which pushed the body wider than its grid track. */
+.week-body { min-width: 0; flex: 1 1 auto; overflow: hidden; display: flex; flex-direction: column; }
+.week-time {
+  font-size: .6875rem; font-weight: 600; color: var(--ink-3);
+  font-variant-numeric: tabular-nums; letter-spacing: .01em;
+}
+.week-title {
+  font-size: .8125rem; font-weight: 550; line-height: 1.3;
+  color: var(--ink); letter-spacing: -0.006em;
+  /* line-clamp needs display:-webkit-box, which other rules kept overriding;
+     a plain max-height crop is less clever and actually works. */
+  max-height: 3.9em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.week-title:hover { color: var(--accent-ink); text-decoration: none; }
+.week-meta {
+  font-size: .6875rem; color: var(--ink-3); margin-top: .1rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%; min-width: 0;
+}
+.week-none { font-size: .75rem; color: var(--ink-3); padding: .5rem; }
+.week-more { display: inline-block; padding: .35rem .5rem; font-size: .75rem;
+             font-weight: 600; color: var(--accent-ink); }
 
 /* -------------------------------------------------------------- month */
 
-.month-grid, .calendar-wrap { background: none; }
-.month-weekdays, .month-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: .35rem; }
-.month-weekdays { margin-bottom: .35rem; }
-.month-weekdays div { text-align: center; font-size: .75rem; font-weight: 600; color: var(--ink-3); padding: .35rem 0; }
-.month-week { margin-bottom: .35rem; }
+.month-grid { background: none; }
+.month-weekdays, .month-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: .4rem; }
+.month-weekdays { margin-bottom: .4rem; }
+.month-weekdays div {
+  text-align: center; font-size: .6875rem; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3); padding: .3rem 0;
+}
+.month-week { margin-bottom: .4rem; }
 .month-cell {
   background: var(--surface);
   border: 0;
   border-radius: var(--radius-sm);
-  min-height: 7rem;
-  padding: .5rem .55rem;
+  min-height: 8rem;
+  padding: .45rem;
   box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column;
+  min-width: 0;
 }
-.month-cell.out, .month-cell:not(.in_month) { background: transparent; box-shadow: none; }
-.month-cell.today { box-shadow: 0 0 0 2px var(--accent); }
-.month-num { font-size: .8125rem; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.month-cell.today .month-num { color: var(--accent-ink); }
-.month-cell ul { list-style: none; margin: .35rem 0 0; padding: 0; }
-.month-cell li { font-size: .6875rem; line-height: 1.35; margin-bottom: .2rem; }
-.month-cell li a, .month-event { color: var(--ink); }
-.month-more { font-size: .6875rem; color: var(--ink-3); }
+.month-cell.out { background: transparent; box-shadow: none; }
+.month-cell.out .month-daynum { color: var(--ink-3); opacity: .45; }
+.month-cell.today { box-shadow: 0 0 0 2px var(--accent), var(--shadow-sm); }
+
+.month-num {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .25rem; margin-bottom: .3rem; color: var(--ink);
+}
+.month-num:hover { text-decoration: none; }
+.month-daynum {
+  /* Square so today's ring is concentric, not a stretched oval. */
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-size: .8125rem; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+.month-cell.today .month-daynum { background: var(--accent); color: #fff; }
+.month-count { font-size: .6875rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+.month-cell ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; min-width: 0; }
+.month-cell li { min-width: 0; }
+.month-event {
+  display: flex; align-items: center; gap: .3rem;
+  padding: .15rem .25rem;
+  border-radius: 6px;
+  font-size: .6875rem; line-height: 1.3;
+  color: var(--ink);
+  min-width: 0;
+}
+.month-event:hover { background: var(--surface-2); text-decoration: none; }
+.month-event .cat-dot { margin: 0; flex: 0 0 auto; }
+.month-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.month-more {
+  display: inline-block; padding: .1rem .25rem;
+  font-size: .6875rem; font-weight: 600; color: var(--accent-ink);
+}
 
 /* ---------------------------------------------------------- mini month */
 
@@ -431,10 +541,16 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
 .mini-head, .mini-cal-nav { display: flex; align-items: center; justify-content: space-between; font-size: .875rem; font-weight: 600; margin-bottom: .5rem; }
 .mini-grid, .mini-week, .mini-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 .mini-wd { text-align: center; font-size: .6875rem; color: var(--ink-3); font-weight: 500; padding: .2rem 0; }
+.mini-grid, .mini-week, .mini-weekdays { justify-items: center; }
 .mini-day {
   border: 0; background: none; color: var(--ink);
   font: inherit; font-size: .8125rem;
-  padding: .3rem 0; border-radius: 50%;
+  /* A square box centred in its column: a 50% radius on a wide, short cell
+     produced an off-centre ellipse behind the date. */
+  width: 28px; height: 28px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-variant-numeric: tabular-nums;
   transition: background-color var(--press), transform var(--press);
 }
 .mini-day:hover { background: rgba(0,0,0,.06); }
@@ -594,7 +710,19 @@ body.chat-open .chat-launch { display: none; }
   }
   .filters > .hint { display: none; }
   .event { grid-template-columns: 1fr; gap: .3rem; padding: 1rem 1.1rem; }
-  .week-grid { grid-template-columns: 1fr; overflow-x: hidden; }
+  /* Seven columns cannot be read on a phone: become a day-by-day agenda. */
+  .week-grid { grid-template-columns: 1fr; gap: .6rem; }
+  .week-col { padding: .6rem .75rem .75rem; }
+  .week-head { grid-template-columns: auto auto 1fr; align-items: baseline; gap: .5rem; }
+  .week-dow { grid-column: 1; grid-row: 1; }
+  .week-date { grid-column: 2; grid-row: 1; font-size: 1.15rem; }
+  .week-count { grid-column: 3; grid-row: 1; text-align: right; }
+  .week-title { -webkit-line-clamp: 2; font-size: .875rem; }
+  .month-cell { min-height: 5rem; padding: .3rem; }
+  .month-daynum { width: 21px; height: 21px; font-size: .75rem; }
+  .month-event-title { display: none; }
+  .month-event { justify-content: center; padding: .1rem; }
+  .month-cell ul { grid-auto-flow: column; justify-content: start; gap: 2px; }
   .month-cell { min-height: 4.5rem; padding: .3rem; }
   .month-cell li { font-size: .625rem; }
   .src-table { display: block; overflow-x: auto; font-size: .8125rem; }

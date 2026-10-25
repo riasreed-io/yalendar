@@ -74,6 +74,7 @@ SORTS = [
     ("title", "Title"),
 ]
 TIME_STEP_COUNT = 24
+WEEK_COLUMN_LIMIT = 8
 TIME_MARKS = (
     ("00:00", "12 am"),
     ("04:00", "4 am"),
@@ -280,9 +281,20 @@ def day_view(
         return RedirectResponse("/login", status_code=302)
     today = today_local().isoformat()
     day = day or today
+    try:
+        date.fromisoformat(day)
+    except ValueError:
+        # A malformed ?day= (typo, stale link, crawler) used to raise straight
+        # out of the view as a 500. Fall back to today instead.
+        day = today
     sort = sort if sort in {s[0] for s in SORTS} else "time"
     group = group if group in {g[0] for g in GROUPS} else "channel"
     now = now_local()
+    # "From 9pm" is a statement about what is left of TODAY. Carrying that
+    # default onto another day hid every morning and afternoon event, which
+    # looked like the day having no events at all. Only a time the user chose
+    # explicitly travels with them.
+    chose_time = bool((request.query_params.get("after") or "").strip())
     after = _after_param(
         request,
         default=_clock_from_step(_step_from_clock(now.strftime("%H:%M"))) if day == today else "all",
@@ -319,7 +331,7 @@ def day_view(
         "q": q or "",
         "cat": cats,
         "unit": units,
-        "after": after,
+        "after": after if chose_time else "",
         "sort": sort,
         "group": group,
     }
@@ -654,13 +666,18 @@ def week_view(
     for offset in range(7):
         day = week_start + timedelta(days=offset)
         key = day.isoformat()
+        items = by_day.get(key) or []
+        # A busy day had ~90 events, turning each column into an endless
+        # scroll; show a readable slice and link the rest to the day view.
         columns.append(
             {
                 "date": key,
                 "label": day.strftime("%a"),
                 "long": day.strftime("%b %-d"),
                 "today": day == today,
-                "events": by_day.get(key) or [],
+                "events": items[:WEEK_COLUMN_LIMIT],
+                "count": len(items),
+                "more": max(0, len(items) - WEEK_COLUMN_LIMIT),
             }
         )
     shown = _parse_month(cal, week_start)
@@ -719,10 +736,13 @@ def calendar_view(
     if not _logged_in(request):
         return RedirectResponse("/login", status_code=302)
     today = today_local()
+    current = None
     if month and len(month) == 7:
-        year, mon = int(month[:4]), int(month[5:7])
-        current = date(year, mon, 1)
-    else:
+        try:
+            current = date(int(month[:4]), int(month[5:7]), 1)
+        except ValueError:
+            current = None
+    if current is None:
         current = date(today.year, today.month, 1)
         month = current.isoformat()[:7]
     last = date(current.year + (current.month == 12), current.month % 12 + 1, 1) - timedelta(days=1)
