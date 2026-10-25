@@ -973,6 +973,9 @@ body.chat-open .chat-launch { display: none; }
        screen; only the header stays put here. The strip is the positioning
        context for its panels, which span its full width. */
     position: relative;
+    /* `top` is still 3.9rem from the sticky rule; left alone it shifts a
+       relatively-positioned strip down over the heading below it. */
+    top: auto;
   }
   .tb-pick, .tb-today, .tb-clear, .tb-arrow, .tb-apply { height: 34px; padding: 0 .7rem; }
   .tb-arrow { width: 34px; padding: 0; }
@@ -999,6 +1002,23 @@ body.chat-open .chat-launch { display: none; }
   .week-date { grid-column: 2; grid-row: 1; font-size: 1.15rem; }
   .week-count { grid-column: 3; grid-row: 1; text-align: right; }
   .week-title { -webkit-line-clamp: 2; font-size: .875rem; }
+  /* Below this width the week grid is one full-width column and the month
+     cells are too small to show titles at all, so the hover cards — which
+     exist to escape a narrow column — have nothing to solve and would only
+     shrink or overflow what is already readable. */
+  .week-item:hover,
+  .week-grid > .week-col:nth-child(n+6) .week-item:hover {
+    width: auto; margin-left: 0; padding: .4rem .5rem;
+    background: var(--surface-2); box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .month-event:hover,
+  .month-week > .month-cell:nth-child(n+6) .month-event:hover {
+    position: static; width: auto; font-size: .6875rem; padding: .1rem;
+    background: var(--surface-2); box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .month-event:hover .month-event-meta { display: none; }
   .month-cell { min-height: 5rem; padding: .3rem; }
   .month-daynum { width: 21px; height: 21px; font-size: .75rem; }
   .month-event-title { display: none; }
