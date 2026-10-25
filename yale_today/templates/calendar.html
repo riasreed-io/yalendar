@@ -1,41 +1,21 @@
 {% extends "base.html" %}
 {% block title %}{{ month_label }} · Yalendar{% endblock %}
 {% block content %}
-<div class="layout with-chat">
-  <aside class="filters">
-    <input type="checkbox" id="show-filters" class="filter-toggle">
-    <label for="show-filters" class="filter-toggle-label">Date &amp; search</label>
-    <div class="filter-panel">
-    <form method="get" action="/calendar">
-      <div class="date-nav">
-        <a class="ghost" href="{{ href(month=prev_month) }}">‹</a>
-        <label>
-          <span>Month</span>
-          <input type="month" name="month" value="{{ month }}" onchange="this.form.submit()">
-        </label>
-        <a class="ghost" href="{{ href(month=next_month) }}">›</a>
-      </div>
-      <label>Search
-        <input type="search" name="q" value="{{ q }}" placeholder="Talk, club, place…">
-      </label>
-      <label>Organization
-        <select name="org" onchange="this.form.submit()">
-          <option value="">All organizations</option>
-          {% for name in facets.orgs %}
-          <option value="{{ name }}" {% if org == name %}selected{% endif %}>{{ name }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      {% include "_filter_hiddens.html" %}
-      <div class="filter-actions">
-        <button type="submit">Apply</button>
-        <a class="ghost" href="/calendar?month={{ month }}">Clear filters</a>
-      </div>
-    </form>
-    </div>
-    <p class="hint">Month grid of the next-month snapshot. Gold = Campus Groups (SOM). Blue = Yale Connect. Tan = public Yale. Green = New Haven. Filters include SOM, YSE, Jackson, and other schools even when a count is zero.</p>
-  </aside>
+{% set tb_view = 'month' %}
+{% set tb_action = '/calendar' %}
+{% set tb_prev = href(month=prev_month) %}
+{% set tb_next = href(month=next_month) %}
+{% set tb_label = month_label %}
+{% set tb_today_url = href(month='') %}
+{% set tb_today_label = 'This month' %}
+{% set tb_field = 'month' %}
+{% set tb_field_label = 'Month' %}
+{% set tb_type = 'month' %}
+{% set tb_value = month %}
+{% set tb_clear = '/calendar?month=' ~ month %}
+{% include "_toolbar.html" %}
 
+<div class="layout">
   <section class="feed calendar-wrap">
     <div class="meta-row">
       <div>
@@ -60,8 +40,6 @@
     <p class="banner warn">Could not reach campus calendars. Saved events are still here.</p>
     {% endif %}
 
-    {% include "_chips.html" %}
-
     <div class="month-grid" role="grid" aria-label="{{ month_label }}">
       <div class="month-weekdays">
         {% for label in weekday_labels %}
@@ -80,10 +58,12 @@
             {% for event in cell.events %}
             <li>
               <a class="month-event" href="{{ event.url or '/?day=' ~ cell.date ~ '&after=all' }}"
-                 {% if event.url %}rel="noopener" target="_blank"{% endif %}
-                 title="{{ event.title }}">
+                 {% if event.url %}rel="noopener" target="_blank"{% endif %}>
                 <span class="cat-dot cat-{{ event.category }}" aria-hidden="true"></span>
                 <span class="month-event-title">{{ event.title }}</span>
+                <span class="month-event-meta">
+                  {{ event.start|when(event.all_day) }}{% if event.org %} · {{ event.org }}{% endif %}
+                </span>
               </a>
             </li>
             {% endfor %}
@@ -96,8 +76,9 @@
       </div>
       {% endfor %}
     </div>
+    <p class="hint">Month grid of the stored snapshot. Hover a listing to read the full title, time and organiser; click it to open the event, or the date number for that day's list. Gold = Campus Groups (SOM). Blue = Yale Connect. Tan = public Yale. Green = New Haven.</p>
   </section>
-  {% include "_chat_panel.html" %}
 </div>
+{% include "_chat_panel.html" %}
 <button type="button" class="chat-launch" id="chat-launch" aria-expanded="false" aria-controls="chat-dock">Ask</button>
 {% endblock %}

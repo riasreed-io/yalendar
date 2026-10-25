@@ -40,6 +40,23 @@
   --shadow: 0 4px 16px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
   --shadow-lg: 0 18px 50px rgba(0,0,0,.14), 0 4px 12px rgba(0,0,0,.06);
 
+  /* Liquid glass. A translucent layer only reads as glass if there is
+     something behind it to bend, so the page carries a faint ambient wash
+     (body::before) for the blur to pick up. Weight scales with the surface:
+     chrome is thick, small chips are thin. */
+  --glass-thick: rgba(255, 255, 255, .70);
+  --glass: rgba(255, 255, 255, .72);
+  --glass-thin: rgba(255, 255, 255, .78);
+  --blur-thick: saturate(190%) blur(34px);
+  --blur: saturate(180%) blur(22px);
+  --blur-thin: saturate(170%) blur(12px);
+  /* Specular edge: light catches the top rim, the rim below stays dark. */
+  --spec: inset 0 1px 0 rgba(255, 255, 255, .92),
+          inset 0 0 0 1px rgba(255, 255, 255, .45),
+          inset 0 -1px 0 rgba(0, 0, 0, .04);
+  --lift: 0 1px 1px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.09);
+  --lift-lg: 0 2px 4px rgba(0,0,0,.05), 0 22px 60px rgba(0,0,0,.17);
+
   --sans: system-ui, -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --serif: var(--sans);
 
@@ -56,11 +73,24 @@
 }
 
 * { box-sizing: border-box; }
-html, body { max-width: 100%; overflow-x: hidden; }
+/* `overflow-x: hidden` here made body a scroll container, which silently
+   broke `position: sticky` on the header and the control strip — they
+   scrolled away instead of staying put. `clip` suppresses the sideways
+   scrollbar without creating a scrollport. */
+html, body { max-width: 100%; overflow-x: clip; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  background: var(--bg);
+  /* The wash the glass bends. Large, slow and low contrast, so it never
+     competes with text; fixed, so blurred chrome resolves it as it scrolls.
+     It lives on the background shorthand rather than a ::before, because a
+     negative-z pseudo-element never painted under the propagated canvas. */
+  background:
+    radial-gradient(44vmax 44vmax at 8% -4%, rgba(0, 113, 227, .30), transparent 64%) fixed,
+    radial-gradient(40vmax 40vmax at 96% 2%, rgba(189, 155, 96, .30), transparent 62%) fixed,
+    radial-gradient(52vmax 52vmax at 78% 100%, rgba(0, 53, 107, .22), transparent 66%) fixed,
+    radial-gradient(38vmax 38vmax at -4% 88%, rgba(47, 107, 61, .18), transparent 64%) fixed,
+    var(--bg);
   color: var(--ink);
   font-family: var(--sans);
   font-size: 17px;              /* comfortable reading size, not 14px UI chrome */
@@ -95,10 +125,12 @@ h3 { font-size: 1.0625rem; line-height: 1.3; letter-spacing: -0.012em; font-weig
   justify-content: space-between;
   gap: 1.5rem;
   padding: .85rem 2rem;
-  background: rgba(251, 251, 253, .72);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--line);
+  background: var(--glass-thick);
+  -webkit-backdrop-filter: var(--blur-thick);
+  backdrop-filter: var(--blur-thick);
+  /* No hard divider: the material itself separates chrome from content, and
+     a bright top rim reads as light catching the edge of the glass. */
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 0 rgba(0,0,0,.055);
 }
 .brand { display: flex; align-items: baseline; gap: .6rem; min-width: 0; }
 .yale-mark {
@@ -131,21 +163,172 @@ main { max-width: 1560px; margin: 0 auto; padding: 2.25rem 2rem 5rem; }
 
 /* ------------------------------------------------------------- layout */
 
-.layout {
-  display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
-  gap: 3rem;
-  align-items: start;
-}
+/* One column. The 248px sidebar used to take a quarter of the page away from
+   the grid at every width; its controls now live in the strip above. */
+.layout { display: block; }
 .feed { min-width: 0; }
 
-.filters {
+/* --------------------------------------------------- control strip */
+
+.toolbar {
   position: sticky;
-  top: 5.5rem;
-  background: none;              /* no card: whitespace separates it instead */
-  border: 0;
-  padding: 0;
+  top: 3.9rem;                       /* 62px: exactly the header's height */
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 0 0 1.75rem;
+  padding: .4rem .45rem;
+  border-radius: var(--pill);
+  box-shadow: var(--spec), var(--lift);
+  isolation: isolate;
 }
+/* The blur lives on a pseudo-element, not on .toolbar itself. An element
+   with backdrop-filter becomes a backdrop root: anything nested inside it
+   (here, the popover panels) then has nothing behind it to blur. Pushing the
+   material down one layer keeps the strip glassy and lets its panels be
+   glass too. */
+.toolbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+}
+.tb-seg {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+.tb-arrow, .tb-pick, .tb-today, .tb-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  height: 36px;
+  padding: 0 .9rem;
+  border-radius: var(--pill);
+  color: var(--ink);
+  font-size: .9375rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--press), transform var(--press);
+}
+.tb-arrow { width: 36px; padding: 0; font-size: 1.25rem; color: var(--ink-2); }
+.tb-arrow:hover, .tb-today:hover, .tb-clear:hover, .tb-pick:hover {
+  background: rgba(255,255,255,.75); text-decoration: none;
+}
+.tb-pick { font-weight: 600; letter-spacing: -0.012em; }
+.tb-pick::-webkit-details-marker { display: none; }
+.tb-caret {
+  width: 0; height: 0; margin-left: .1rem;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-top: 4.5px solid var(--ink-3);
+  transition: transform 180ms var(--ease-out);
+}
+details[open] > .tb-pick { background: var(--ink); color: #fff; }
+details[open] > .tb-pick .tb-caret { border-top-color: rgba(255,255,255,.7); transform: rotate(180deg); }
+details[open] > .tb-pick .tb-badge { background: rgba(255,255,255,.25); color: #fff; }
+.tb-badge {
+  font-style: normal; font-size: .75rem; font-weight: 650;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--pill);
+  background: var(--accent); color: #fff;
+}
+.tb-today { color: var(--accent-ink); }
+.tb-clear { color: var(--ink-3); font-weight: 400; }
+
+.tb-search { flex: 1 1 14rem; min-width: 0; margin: 0; display: block; }
+.tb-search input {
+  width: 100%; height: 36px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: var(--pill);
+  background: rgba(255,255,255,.7);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.07);
+  color: var(--ink);
+  font: inherit; font-size: .9375rem;
+}
+.tb-search input::placeholder { color: var(--ink-3); }
+.tb-search input:focus {
+  outline: none;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 4px rgba(0,113,227,.15);
+}
+.tb-apply {
+  height: 36px; padding: 0 1.1rem;
+  border: 0; border-radius: var(--pill);
+  background: var(--accent); color: #fff;
+  font-size: .9375rem; font-weight: 500;
+  white-space: nowrap;
+  transition: background-color var(--press), transform var(--press);
+}
+.tb-apply:hover { background: var(--accent-ink); }
+
+/* -------------------------------------------------------- popovers */
+
+.pop { position: relative; }
+.pop-panel {
+  position: absolute;
+  top: calc(100% + .55rem);
+  left: 0;
+  z-index: 70;
+  width: max-content;
+  max-width: min(46rem, calc(100vw - 2.5rem));
+  max-height: calc(100vh - 10rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 1.15rem 1.15rem;
+  border-radius: var(--radius-lg);
+  /* A big surface has to read as thicker than a chip, or the page behind it
+     stays legible and competes with the controls on top. */
+  background: rgba(255, 255, 255, .82);
+  -webkit-backdrop-filter: saturate(200%) blur(44px);
+  backdrop-filter: saturate(200%) blur(44px);
+  box-shadow: var(--spec), var(--lift-lg);
+  /* Materialise: a real surface arrives with scale and blur, not a fade. */
+  transform-origin: top left;
+  animation: pop-in 240ms var(--ease-out) both;
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(.94) translateY(-6px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+.pop-wide { width: min(46rem, calc(100vw - 2.5rem)); }
+.pop-date { width: 17rem; }
+.pop-list { width: 20rem; }
+/* These two sit near the right edge, so they open leftward from their own
+   right edge rather than running off the page. */
+.tb-filterpop .pop-panel, .tb-sortpop .pop-panel {
+  left: auto; right: 0; transform-origin: top right;
+}
+.pop-field { display: block; margin: 0 0 .9rem; }
+.pop-field > span {
+  display: block;
+  font-size: .75rem; font-weight: 600; letter-spacing: .01em;
+  color: var(--ink-3); margin: 0 0 .35rem;
+}
+.pop-field:last-child { margin-bottom: 0; }
+.pop-panel .class-block:last-of-type { margin-bottom: 0; }
+.pop-panel .chip-hint { margin-top: 1rem; }
+/* Glass on glass collapses legibility; inside a panel the chips go solid. */
+.pop-panel .chip {
+  background: var(--surface);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.pop-panel .chip:hover { background: var(--surface-2); }
+.pop-panel .chip.on { background: var(--ink); box-shadow: none; }
+
 .field-label {
   display: block;
   font-size: .75rem;
@@ -155,8 +338,7 @@ main { max-width: 1560px; margin: 0 auto; padding: 2.25rem 2rem 5rem; }
   margin: 1.6rem 0 .5rem;
   text-transform: none;
 }
-.filters label { display: block; font-size: .75rem; font-weight: 600; color: var(--ink-3); margin: 1.6rem 0 .5rem; }
-.filters input, .filters select, .panel textarea {
+.pop-field input, .pop-field select, .panel textarea {
   width: 100%;
   padding: .6rem .75rem;
   border: 1px solid var(--line-strong);
@@ -166,13 +348,12 @@ main { max-width: 1560px; margin: 0 auto; padding: 2.25rem 2rem 5rem; }
   font: inherit;
   font-size: .9375rem;
 }
-.filters input:focus, .filters select:focus, .ask-form input:focus, .panel textarea:focus {
+.pop-field input:focus, .pop-field select:focus,
+.ask-form input:focus, .panel textarea:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(0,113,227,.15);
 }
-.date-nav { display: flex; align-items: center; gap: .4rem; }
-.date-nav input { flex: 1 1 auto; }
 .ghost {
   background: var(--surface);
   border: 1px solid var(--line-strong);
@@ -184,14 +365,6 @@ main { max-width: 1560px; margin: 0 auto; padding: 2.25rem 2rem 5rem; }
   transition: background-color var(--press), transform var(--press);
 }
 .ghost:hover { background: var(--surface-2); text-decoration: none; }
-.today-link {
-  display: inline-block;
-  background: none;
-  border: 0;
-  color: var(--accent-ink);
-  font-size: .9375rem;
-  padding: .5rem 0 0;
-}
 .hint, .chip-hint {
   font-size: .8125rem;
   line-height: 1.45;
@@ -204,12 +377,16 @@ main { max-width: 1560px; margin: 0 auto; padding: 2.25rem 2rem 5rem; }
 .meta-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: baseline;
   gap: 1.5rem;
-  margin: 0 0 2rem;
+  margin: 0 0 1.25rem;
 }
-.meta-row h1, .meta-row h2 { letter-spacing: -0.032em; }
-.meta-row p { margin: .5rem 0 0; color: var(--ink-2); font-size: 1.0625rem; }
+.meta-row > div { display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap; }
+.meta-row h1 {
+  font-size: 1.75rem; line-height: 1.1; letter-spacing: -0.026em; font-weight: 650;
+}
+.meta-row h2 { letter-spacing: -0.032em; }
+.meta-row p { margin: 0; color: var(--ink-2); font-size: .9375rem; }
 
 .banner {
   background: rgba(0,113,227,.08);
@@ -246,18 +423,20 @@ main { max-width: 1560px; margin: 0 auto; padding: 2.25rem 2rem 5rem; }
   display: inline-flex;
   align-items: center;
   gap: .3rem;
-  background: var(--surface);
+  background: var(--glass-thin);
+  -webkit-backdrop-filter: var(--blur-thin);
+  backdrop-filter: var(--blur-thin);
   color: var(--ink);
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: var(--pill);
   padding: .4rem .85rem;
   font-size: .875rem;
   font-weight: 500;
-  box-shadow: var(--shadow-sm);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.5), 0 1px 2px rgba(0,0,0,.05);
   transition: background-color var(--press), transform var(--press),
               box-shadow var(--press), border-color var(--press);
 }
-.chip:hover { background: var(--surface-2); text-decoration: none; }
+.chip:hover { background: rgba(255,255,255,.9); text-decoration: none; }
 .chip em { font-style: normal; color: var(--ink-3); font-weight: 400; font-size: .8125rem; }
 .chip.on {
   background: var(--ink);
@@ -320,7 +499,15 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
 }
 .cat-head span { color: var(--ink-3); font-weight: 400; }
 
-.events { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+/* One 1450px-wide line per event wasted most of the page and gave the title
+   a measure no one wants to read; the list flows into as many ~32rem columns
+   as fit instead. */
+.events {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: .6rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 32rem), 1fr));
+  align-items: start;
+}
 .event {
   position: relative;
   display: grid;
@@ -449,20 +636,31 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
   border-radius: 9px;
   transition: background-color var(--press);
 }
+/* Hover lifts the listing out of its column and on to a glass card, so the
+   whole title is readable without clicking. The column is too narrow for a
+   sixty-character title at any sane page width; this is the way out. */
 .week-item:hover {
-  background: var(--surface);
   position: relative;
   z-index: 30;
-  /* Escape the column so the full title is readable without clicking. */
-  box-shadow: 0 8px 28px rgba(0,0,0,.16), 0 0 0 1px var(--line);
-  border-radius: 10px;
-  min-width: 230px;
+  width: 264px;
+  padding: .5rem .6rem;
+  border-radius: 13px;
+  background: var(--glass-thin);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--spec), var(--lift-lg);
 }
 .week-item:hover .week-title { max-height: none; }
 .week-item:hover .week-meta { white-space: normal; }
+/* The last two columns have no room to the right, so they grow leftward and
+   keep their right edge pinned instead of running off the viewport. */
+.week-grid > .week-col:nth-child(n+6) .week-item:hover { margin-left: calc(100% - 264px); }
 @media (hover: none) {
   /* No hover on touch: tapping the title already opens the event. */
-  .week-item:hover { box-shadow: none; min-width: 0; background: var(--surface-2); }
+  .week-item:hover {
+    box-shadow: none; width: auto; margin-left: 0; padding: .4rem .5rem;
+    background: var(--surface-2); backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
   .week-item:hover .week-title { max-height: 3.9em; }
 }
 .week-item .cat-dot { margin-top: .5rem; }
@@ -536,7 +734,13 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
 .month-count { font-size: .6875rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 
 .month-cell ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; min-width: 0; }
-.month-cell li { min-width: 0; }
+.month-cell li {
+  min-width: 0;
+  position: relative;
+  /* Reserve the row's normal height so the hover card, which is taken out of
+     flow, cannot make the whole month row jump taller. */
+  min-height: calc(.6875rem * 1.3 + .3rem);
+}
 .month-event {
   display: flex; align-items: center; gap: .3rem;
   padding: .15rem .25rem;
@@ -545,9 +749,54 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
   color: var(--ink);
   min-width: 0;
 }
-.month-event:hover { background: var(--surface-2); text-decoration: none; }
+/* Same move as the week view: a month cell is far too narrow for a title, so
+   hovering grows the listing on to a glass card that escapes the cell. */
+.month-event:hover {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 40;
+  width: 252px;
+  align-items: flex-start;
+  padding: .45rem .6rem;
+  border-radius: 12px;
+  background: var(--glass-thin);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--spec), var(--lift-lg);
+  text-decoration: none;
+  font-size: .8125rem;
+  line-height: 1.32;
+}
+.month-event:hover .cat-dot { margin-top: .4rem; }
+.month-event:hover .month-event-title {
+  white-space: normal; overflow: visible; font-weight: 550;
+  letter-spacing: -0.006em; overflow-wrap: anywhere;
+}
+.month-event:hover .month-event-meta { display: block; }
+/* The last two columns have no room to the right, so the card is pinned to
+   their right edge instead of running off the viewport. */
+.month-week > .month-cell:nth-child(n+6) .month-event:hover { left: auto; right: 0; }
+@media (hover: none) {
+  .month-event:hover {
+    position: static; width: auto; padding: .15rem .25rem; font-size: .6875rem;
+    background: var(--surface-2); box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .month-event:hover .month-event-title { white-space: nowrap; overflow: hidden; }
+  .month-event:hover .month-event-meta { display: none; }
+}
 .month-event .cat-dot { margin: 0; flex: 0 0 auto; }
 .month-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.month-event-meta {
+  display: none;
+  margin-top: .15rem;
+  font-size: .75rem; color: var(--ink-3);
+}
+.month-event:hover .month-event-title, .month-event:hover .month-event-meta { min-width: 0; }
+/* The flex row has to become a column once the card has two lines of content. */
+.month-event:hover { flex-wrap: wrap; }
+.month-event:hover .month-event-title { flex: 1 1 calc(100% - 1rem); }
+.month-event:hover .month-event-meta { flex: 1 1 100%; margin-left: .6rem; }
 .month-more {
   display: inline-block; padding: .1rem .25rem;
   font-size: .6875rem; font-weight: 600; color: var(--accent-ink);
@@ -609,14 +858,13 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
 .panel { background: var(--surface); border: 0; border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); }
 .panel h2 { margin: 0 0 .4rem; }
 .panel .row { display: flex; align-items: center; gap: 1rem; margin-top: .85rem; }
-.panel button, .filter-actions button, .ask-form button {
+.panel button, .ask-form button {
   background: var(--accent); color: #fff; border: 0;
   border-radius: var(--pill); padding: .55rem 1.3rem;
   font-size: .9375rem; font-weight: 500;
   transition: background-color var(--press), transform var(--press);
 }
 .panel button:hover, .ask-form button:hover { background: var(--accent-ink); }
-.filter-actions { display: flex; gap: .6rem; align-items: center; margin-top: 1.25rem; }
 
 /* ----------------------------------------------------------- Ask panel */
 
@@ -635,10 +883,10 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
   width: min(25rem, 100vw);
   max-height: min(72vh, 36rem);
   z-index: 60;
-  background: rgba(255,255,255,.82);
-  -webkit-backdrop-filter: saturate(180%) blur(30px);
-  backdrop-filter: saturate(180%) blur(30px);
-  box-shadow: var(--shadow-lg);
+  background: var(--glass-thin);
+  -webkit-backdrop-filter: var(--blur-thick);
+  backdrop-filter: var(--blur-thick);
+  box-shadow: var(--spec), var(--lift-lg);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   transition: none;
   transform: translate3d(0, 100%, 0);
@@ -656,7 +904,7 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
   background: var(--ink); color: #fff;
   font-size: .9375rem; font-weight: 500;
   padding: .75rem 1.35rem;
-  box-shadow: 0 6px 20px rgba(0,0,0,.24);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 6px 20px rgba(0,0,0,.24);
   transition: transform var(--press), background-color var(--press);
 }
 body.chat-open .chat-launch { display: none; }
@@ -693,7 +941,7 @@ body.chat-open .chat-launch { display: none; }
 
 /* ------------------------------------------------------------- press */
 
-.chip, .ghost, button, .today-link, .mini-day, .top nav a {
+.chip, .ghost, button, .tb-arrow, .tb-today, .tb-pick, .mini-day, .top nav a {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -704,31 +952,44 @@ body.chat-open .chat-launch { display: none; }
 
 /* ------------------------------------------------------------ mobile */
 
-.filter-toggle { position: absolute; opacity: 0; width: 0; height: 0; }
-.filter-toggle-label { display: none; }
-
 @media (max-width: 1000px) {
-  main { padding: 1.5rem 1.15rem 5rem; }
-  .top { padding: .7rem 1.15rem; }
-  .layout { grid-template-columns: 1fr; gap: .75rem; }
-  .filters { position: static; }
-  .filter-toggle-label {
-    display: flex; align-items: center; justify-content: space-between;
-    width: 100%; padding: .55rem 0; margin: 0;
-    font-size: .9375rem; font-weight: 500; color: var(--ink);
-    background: none; border: 0; cursor: pointer;
+  main { padding: 1.25rem 1.15rem 5rem; }
+  /* Brand over nav, with the links scrolling sideways rather than wrapping
+     into a second row that the brand then floats between. */
+  .top { padding: .55rem 1.15rem .4rem; flex-direction: column; align-items: stretch; gap: .25rem; }
+  .top nav {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    margin: 0 -1.15rem; padding: 0 1.15rem .15rem;
   }
-  .filter-toggle-label::after { content: "⌄"; color: var(--ink-3); font-size: 1.1rem; line-height: 1; }
-  .filter-toggle:checked + .filter-toggle-label::after,
-  .filters.open .filter-toggle-label::after { content: "⌃"; }
-  .filter-panel { display: none; }
-  .filter-toggle:checked ~ .filter-panel,
-  .filters.open .filter-panel {
-    display: block; background: var(--surface);
-    border-radius: var(--radius); padding: 1rem; margin-bottom: .5rem;
-    box-shadow: var(--shadow-sm);
+  .top nav::-webkit-scrollbar { display: none; }
+  .top nav a { flex: 0 0 auto; }
+  .meta-row h1 { font-size: 1.375rem; }
+  /* The strip wraps to two rows rather than squeezing seven controls into
+     one, and its popovers become full-width sheets pinned under it. */
+  .toolbar {
+    flex-wrap: wrap; border-radius: var(--radius-lg);
+    padding: .4rem; gap: .25rem;
+    /* 87px of header plus a 3-row strip would pin a quarter of a phone
+       screen; only the header stays put here. The strip is the positioning
+       context for its panels, which span its full width. */
+    position: relative;
   }
-  .filters > .hint { display: none; }
+  .tb-pick, .tb-today, .tb-clear, .tb-arrow, .tb-apply { height: 34px; padding: 0 .7rem; }
+  .tb-arrow { width: 34px; padding: 0; }
+  .tb-seg { flex: 1 1 100%; justify-content: space-between; }
+  .tb-search { flex: 1 1 10rem; order: 9; }
+  .tb-apply { order: 10; }
+  .tb-clear { order: 11; }
+  /* A sheet pinned to the bottom beats a panel hanging off a wrapped row:
+     its position does not move as the strip changes height. */
+  .pop { position: static; }
+  .toolbar .pop-panel {
+    position: absolute;
+    top: calc(100% + .5rem); bottom: auto;
+    left: 0; right: 0; width: auto; max-width: none;
+    max-height: 68vh;
+    transform-origin: top center;
+  }
   .event { grid-template-columns: 1fr; gap: .3rem; padding: 1rem 1.1rem; }
   /* Seven columns cannot be read on a phone: become a day-by-day agenda. */
   .week-grid { grid-template-columns: 1fr; gap: .6rem; }
@@ -760,14 +1021,35 @@ body.chat-open .chat-launch { display: none; }
   }
   .chat-dock[data-dock] { transition: opacity 180ms ease !important; transform: none !important; opacity: 0; visibility: hidden; }
   .chat-dock[data-dock].open { opacity: 1; visibility: visible; }
+  /* A surface that scales and un-blurs is exactly the vestibular motion this
+     setting asks us to drop; cross-fade instead. */
+  .pop-panel { animation: none; }
   .is-pressed { transform: none; background-color: rgba(0,0,0,.06); }
   .event:hover { transform: none; }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .top { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; }
-  .chat-dock[data-dock] { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .top, .toolbar, .toolbar::before, .pop-panel, .chat-dock[data-dock], .chip,
+  .week-item:hover, .month-event:hover {
+    background: var(--surface);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .top { border-bottom: 1px solid var(--line); }
+  .toolbar, .pop-panel, .chip { box-shadow: 0 0 0 1px var(--line), var(--shadow-sm); }
+  .tb-search input { background: var(--surface-2); }
+  body { background: var(--bg); }
 }
 @media (prefers-contrast: more) {
   :root { --line: rgba(0,0,0,.3); --line-strong: rgba(0,0,0,.5); --ink-2: #3a3a3c; --ink-3: #4a4a4e; }
-  .chip, .event, .month-cell, .week-col { border: 1px solid var(--line-strong); }
+  .chip, .event, .month-cell, .week-col, .toolbar, .pop-panel {
+    border: 1px solid var(--line-strong);
+  }
+  body { background: var(--bg); }
+}
+
+/* Safari/Chrome/Firefox all support backdrop-filter now, but a browser that
+   does not would render these as washed-out, barely-legible panes. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .top, .toolbar, .toolbar::before, .pop-panel, .chip, .chat-dock[data-dock],
+  .week-item:hover, .month-event:hover { background: var(--surface); }
+  .toolbar, .pop-panel { box-shadow: 0 0 0 1px var(--line), var(--lift); }
 }

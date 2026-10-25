@@ -8,4 +8,4 @@
 <input type="hidden" name="cat" value="{{ item }}">
 {% endfor %}
 <input type="hidden" name="after" value="{{ after }}">
-{% for slug in unit %}<input type="hidden" name="unit" value="{{ slug }}">{% endfor %}
+{% if not skip_unit %}{% for slug in unit %}<input type="hidden" name="unit" value="{{ slug }}">{% endfor %}{% endif %}

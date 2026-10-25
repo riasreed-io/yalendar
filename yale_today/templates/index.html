@@ -1,77 +1,25 @@
 {% extends "base.html" %}
 {% block title %}{{ day }} · Yalendar{% endblock %}
 {% block content %}
-<div class="layout with-chat">
-  <aside class="filters">
-    <input type="checkbox" id="show-filters" class="filter-toggle">
-    <label for="show-filters" class="filter-toggle-label">Date &amp; search</label>
-    <div class="filter-panel">
-    <form method="get" action="/">
-      <div class="date-nav">
-        <a class="ghost" href="{{ href(day=prev_day) }}">‹</a>
-        <label>
-          <span>Date</span>
-          <input type="date" name="day" value="{{ day }}" onchange="this.form.submit()">
-        </label>
-        <a class="ghost" href="{{ href(day=next_day) }}">›</a>
-      </div>
-      <a class="today-link" href="{{ href(day=today) }}">Jump to today</a>
-      {% include "_mini_month.html" %}
+{% set tb_view = 'day' %}
+{% set tb_action = '/' %}
+{% set tb_prev = href(day=prev_day) %}
+{% set tb_next = href(day=next_day) %}
+{% set tb_label = day | daylabel %}
+{% set tb_today_url = href(day=today) %}
+{% set tb_today_label = 'Today' %}
+{% set tb_field = 'day' %}
+{% set tb_field_label = 'Date' %}
+{% set tb_type = 'date' %}
+{% set tb_value = day %}
+{% set tb_clear = '/?day=' ~ day %}
+{% include "_toolbar.html" %}
 
-      <label>Search
-        <input type="search" name="q" value="{{ q }}" placeholder="Talk, club, place…">
-      </label>
-
-      <label>Department / group
-        <select name="unit" onchange="this.form.submit()">
-          <option value="">All {{ facets.units|length }} departments</option>
-          {% for item in facets.units %}
-          <option value="{{ item.slug }}" {% if item.slug in unit %}selected{% endif %}>
-            {{ item.label }} ({{ item.count }})
-          </option>
-          {% endfor %}
-        </select>
-      </label>
-
-      <label>Organization
-        <select name="org" onchange="this.form.submit()">
-          <option value="">All organizations</option>
-          {% for name in facets.orgs %}
-          <option value="{{ name }}" {% if org == name %}selected{% endif %}>{{ name }}</option>
-          {% endfor %}
-        </select>
-      </label>
-
-      <label>Sort
-        <select name="sort" onchange="this.form.submit()">
-          {% for value, label in sorts %}
-          <option value="{{ value }}" {% if sort == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
-
-      <label>Group list by
-        <select name="group" onchange="this.form.submit()">
-          {% for value, label in groupings %}
-          <option value="{{ value }}" {% if group == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
-
-      {% include "_filter_hiddens.html" %}
-      <div class="filter-actions">
-        <button type="submit">Apply</button>
-        <a class="ghost" href="/?day={{ day }}">Clear filters</a>
-      </div>
-    </form>
-    </div>
-    <p class="hint">Day list. Use Month for the grid. Gold = Campus Groups (SOM), separate from Yale Connect. Signing in loads about one month of public Yale, Connect, Campus Groups, and New Haven events — not your NetID password.</p>
-  </aside>
-
+<div class="layout">
   <section class="feed">
     <div class="meta-row">
       <div>
-        <h1>{{ day }}</h1>
+        <h1>{{ day | daylabel }}</h1>
         <p>
           {% if count != total %}{{ count }} of {{ total }}{% else %}{{ total }}{% endif %}
           event{% if total != 1 %}s{% endif %}
@@ -91,8 +39,6 @@
     {% elif notice == 'refresh-failed' %}
     <p class="banner warn">Could not reach campus calendars. Saved events are still here.</p>
     {% endif %}
-
-    {% include "_chips.html" %}
 
     {% if not groups or not count %}
       <p class="empty">No events match these filters. Clear filters or pick another day.</p>
@@ -126,7 +72,7 @@
       {% endfor %}
     {% endif %}
   </section>
-  {% include "_chat_panel.html" %}
 </div>
+{% include "_chat_panel.html" %}
 <button type="button" class="chat-launch" id="chat-launch" aria-expanded="false" aria-controls="chat-dock">Ask</button>
 {% endblock %}

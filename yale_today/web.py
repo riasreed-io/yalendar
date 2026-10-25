@@ -63,7 +63,16 @@ def format_when(start: str, all_day: int) -> str:
         return start[11:16] if len(start) >= 16 else start
 
 
+def format_daylabel(iso: str) -> str:
+    """2026-10-25 -> 'Sat, Oct 25'. The toolbar shows a date people read."""
+    try:
+        return date.fromisoformat((iso or "")[:10]).strftime("%a, %b %-d")
+    except ValueError:
+        return iso or ""
+
+
 templates.env.filters["when"] = format_when
+templates.env.filters["daylabel"] = format_daylabel
 app.mount("/static", StaticFiles(directory=str(ROOT / "yale_today" / "static")), name="static")
 
 db.ensure_shared_invite()
@@ -571,6 +580,20 @@ def _parse_month(value: str | None, fallback: date) -> date:
     return date(fallback.year, fallback.month, 1)
 
 
+def _timed_first(items: list[dict]) -> list[dict]:
+    """Timed events before all-day ones, each in start order.
+
+    Multi-day exhibitions are stored as all-day events on every date they run,
+    so a plain chronological sort put the same six gallery shows at the top of
+    all seven week columns and pushed the day's actual talks out of the
+    visible slice. They are still listed, just after the things with a time.
+    """
+    return sorted(
+        items,
+        key=lambda e: (1 if e.get("all_day") else 0, e.get("start") or ""),
+    )
+
+
 def build_mini_month(
     shown: date,
     today: date,
@@ -666,7 +689,7 @@ def week_view(
     for offset in range(7):
         day = week_start + timedelta(days=offset)
         key = day.isoformat()
-        items = by_day.get(key) or []
+        items = _timed_first(by_day.get(key) or [])
         # A busy day had ~90 events, turning each column into an endless
         # scroll; show a readable slice and link the rest to the day view.
         columns.append(
@@ -776,7 +799,7 @@ def calendar_view(
         cells = []
         for day in week:
             key = day.isoformat()
-            items = by_day.get(key) or []
+            items = _timed_first(by_day.get(key) or [])
             cells.append(
                 {
                     "date": key,

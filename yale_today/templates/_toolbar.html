@@ -1,0 +1,107 @@
+{#
+  One horizontal control strip, in place of the old 248px sidebar.
+
+  The sidebar cost the grid a quarter of the page at every width; a strip costs
+  it about 56px of height once. Date and search stay in the open because that
+  is the common path; sources, schools, topics, time and sort move one level
+  deeper into popovers, which is where advanced controls belong.
+
+  The including template sets: tb_view, tb_action, tb_prev, tb_next, tb_label,
+  tb_today_url, tb_today_label, tb_field, tb_type, tb_value, tb_clear.
+#}
+{% set n_active = (channel | length) + (dept | length) + (cat | length)
+                  + (1 if unit else 0) + (0 if all_times else 1) %}
+<form class="toolbar" method="get" action="{{ tb_action }}">
+  <div class="tb-seg">
+    <a class="tb-arrow" href="{{ tb_prev }}" aria-label="Previous">&lsaquo;</a>
+    <details class="pop tb-datepop">
+      <summary class="tb-pick">
+        <span>{{ tb_label }}</span>
+        <span class="tb-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="pop-panel pop-date">
+        <label class="pop-field">
+          <span>{{ tb_field_label }}</span>
+          <input type="{{ tb_type }}" name="{{ tb_field }}" value="{{ tb_value }}"
+                 onchange="this.form.submit()">
+        </label>
+        {% if mini is defined and mini %}{% include "_mini_month.html" %}{% endif %}
+      </div>
+    </details>
+    <a class="tb-arrow" href="{{ tb_next }}" aria-label="Next">&rsaquo;</a>
+  </div>
+
+  <a class="tb-today" href="{{ tb_today_url }}">{{ tb_today_label }}</a>
+
+  <label class="tb-search">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search talks, clubs, places…"
+           aria-label="Search events">
+  </label>
+
+  <details class="pop tb-filterpop">
+    <summary class="tb-pick">
+      <span>Filters</span>
+      {% if n_active %}<em class="tb-badge">{{ n_active }}</em>{% endif %}
+      <span class="tb-caret" aria-hidden="true"></span>
+    </summary>
+    <div class="pop-panel pop-wide">
+      {% include "_chips.html" %}
+    </div>
+  </details>
+
+  <details class="pop tb-sortpop">
+    <summary class="tb-pick">
+      <span>View</span>
+      <span class="tb-caret" aria-hidden="true"></span>
+    </summary>
+    <div class="pop-panel pop-list">
+      {% if tb_view == 'day' %}
+      <label class="pop-field">
+        <span>Department / group</span>
+        <select name="unit" onchange="this.form.submit()">
+          <option value="">All {{ facets.units | length }} departments</option>
+          {% for item in facets.units %}
+          <option value="{{ item.slug }}" {% if item.slug in unit %}selected{% endif %}>
+            {{ item.label }} ({{ item.count }})
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+      {% endif %}
+      <label class="pop-field">
+        <span>Organization</span>
+        <select name="org" onchange="this.form.submit()">
+          <option value="">All organizations</option>
+          {% for name in facets.orgs %}
+          <option value="{{ name }}" {% if org == name %}selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      {% if tb_view == 'day' %}
+      <label class="pop-field">
+        <span>Sort</span>
+        <select name="sort" onchange="this.form.submit()">
+          {% for value, label in sorts %}
+          <option value="{{ value }}" {% if sort == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="pop-field">
+        <span>Group list by</span>
+        <select name="group" onchange="this.form.submit()">
+          {% for value, label in groupings %}
+          <option value="{{ value }}" {% if group == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      {% endif %}
+    </div>
+  </details>
+
+  {% set skip_unit = (tb_view == 'day') %}
+  {% include "_filter_hiddens.html" %}
+  <button class="tb-apply" type="submit">Apply</button>
+  {% if n_active or q or org %}
+  <a class="tb-clear" href="{{ tb_clear }}">Clear</a>
+  {% endif %}
+</form>

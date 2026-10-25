@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}Yalendar{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css?v=wk4">
+  <link rel="stylesheet" href="/static/style.css?v=glass1">
 </head>
 <body>
   <header class="top">
@@ -61,8 +61,23 @@
     window.addEventListener("DOMContentLoaded", function () {
       if (window.Fluid) {
         window.Fluid.pressable(document.body,
-          ".chip, .ghost, button, .mini-day, .today-link");
+          ".chip, .ghost, button, .mini-day, .tb-arrow, .tb-today, .tb-pick");
       }
+
+      // A <details> popover has no dismissal behaviour of its own: without
+      // this it stays open until you click its own summary again.
+      function closePops(except) {
+        document.querySelectorAll("details.pop[open]").forEach(function (d) {
+          if (d !== except) d.open = false;
+        });
+      }
+      document.addEventListener("pointerdown", function (e) {
+        var inside = e.target.closest ? e.target.closest("details.pop") : null;
+        closePops(inside);
+      }, true);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closePops(null);
+      });
     });
   </script>
 </body>

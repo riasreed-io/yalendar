@@ -1,43 +1,21 @@
 {% extends "base.html" %}
 {% block title %}{{ week_label }} · Yalendar{% endblock %}
 {% block content %}
-<div class="layout with-chat">
-  <aside class="filters">
-    <input type="checkbox" id="show-filters" class="filter-toggle">
-    <label for="show-filters" class="filter-toggle-label">Date &amp; search</label>
-    <div class="filter-panel">
-    <form method="get" action="/week">
-      <div class="date-nav">
-        <a class="ghost" href="{{ href(start=prev_start) }}">‹</a>
-        <label>
-          <span>Week of</span>
-          <input type="date" name="start" value="{{ start }}" onchange="this.form.submit()">
-        </label>
-        <a class="ghost" href="{{ href(start=next_start) }}">›</a>
-      </div>
-      <a class="today-link" href="{{ href(start='') }}">This week</a>
-      {% include "_mini_month.html" %}
-      <label>Search
-        <input type="search" name="q" value="{{ q }}" placeholder="Talk, club, place…">
-      </label>
-      <label>Organization
-        <select name="org" onchange="this.form.submit()">
-          <option value="">All organizations</option>
-          {% for name in facets.orgs %}
-          <option value="{{ name }}" {% if org == name %}selected{% endif %}>{{ name }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      {% include "_filter_hiddens.html" %}
-      <div class="filter-actions">
-        <button type="submit">Apply</button>
-        <a class="ghost" href="/week?start={{ start }}">Clear filters</a>
-      </div>
-    </form>
-    </div>
-    <p class="hint">Week planner. Same source, school, and topic filters as Month. Click a title for the day list.</p>
-  </aside>
+{% set tb_view = 'week' %}
+{% set tb_action = '/week' %}
+{% set tb_prev = href(start=prev_start) %}
+{% set tb_next = href(start=next_start) %}
+{% set tb_label = week_label %}
+{% set tb_today_url = href(start='') %}
+{% set tb_today_label = 'This week' %}
+{% set tb_field = 'start' %}
+{% set tb_field_label = 'Week of' %}
+{% set tb_type = 'date' %}
+{% set tb_value = start %}
+{% set tb_clear = '/week?start=' ~ start %}
+{% include "_toolbar.html" %}
 
+<div class="layout">
   <section class="feed calendar-wrap">
     <div class="meta-row">
       <div>
@@ -61,8 +39,6 @@
     {% elif notice == 'refresh-failed' %}
     <p class="banner warn">Could not reach campus calendars. Saved events are still here.</p>
     {% endif %}
-
-    {% include "_chips.html" %}
 
     <div class="week-grid">
       {% for col in columns %}
@@ -97,8 +73,9 @@
       </section>
       {% endfor %}
     </div>
+    <p class="hint">Week planner. Hover a listing to read it in full; click the title to open the event, or the date to see that day. Same source, school and topic filters as Month.</p>
   </section>
-  {% include "_chat_panel.html" %}
 </div>
+{% include "_chat_panel.html" %}
 <button type="button" class="chat-launch" id="chat-launch" aria-expanded="false" aria-controls="chat-dock">Ask</button>
 {% endblock %}
