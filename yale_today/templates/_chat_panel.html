@@ -8,7 +8,8 @@
 <aside class="chat-dock{% if mode == 'page' %} chat-plain{% endif %}" id="chat-dock"
        aria-label="Ask Yalendar"{% if mode == 'dock' %} data-dock="1"{% endif %}>
   {% if mode == 'dock' %}
-  <div class="chat-dock-head">
+  <div class="chat-grabber" id="chat-grabber" aria-hidden="true"></div>
+  <div class="chat-dock-head" id="chat-dock-head">
     <h2>Ask Yalendar</h2>
     <button type="button" class="chat-close" id="chat-close" aria-label="Close the assistant">&times;</button>
   </div>

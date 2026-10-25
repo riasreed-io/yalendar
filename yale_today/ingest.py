@@ -166,15 +166,23 @@ def run_ingest(
             msg = (report.connect_login or {}).get("message") or "CampusGroups login failed"
             report.errors.append(msg)
 
-    localist_events = pull(
-        "Yale Events (Localist)",
-        lambda: localist.fetch_localist(days=span, start=start) if start else localist.fetch_localist(),
-        source="localist",
-    )
-    report.localist = len(localist_events)
-    kept_localist = keep(localist_events)
-    collected.extend(kept_localist)
-    _log("Yale Events (Localist)", kept_localist, fallback="localist")
+    # Every Localist instance, not just the central calendar: Yale schools can
+    # run their own (Jackson does), and those events appear nowhere centrally.
+    report.localist = 0
+    for inst_source, inst_base, inst_host in localist.LOCALIST_INSTANCES:
+        label = ("Yale Events (Localist)" if inst_source == "localist"
+                 else f"{inst_host or inst_source} (Localist)")
+        rows = pull(
+            label,
+            lambda b=inst_base, s_=inst_source, h=inst_host: localist.fetch_localist(
+                days=span, start=start, base_url=b, source=s_, default_host=h)
+            if start else localist.fetch_localist(base_url=b, source=s_, default_host=h),
+            source=inst_source,
+        )
+        report.localist += len(rows)
+        kept_rows = keep(rows)
+        collected.extend(kept_rows)
+        _log(label, kept_rows, fallback=inst_source)
 
     connect_events = pull("Yale Connect (public)",
                           lambda: connect.fetch_connect_public(limit=1500),

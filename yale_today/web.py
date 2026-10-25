@@ -438,6 +438,8 @@ def friends(request: Request):
 # source that has gone quiet rather than silently omitting it.
 EXPECTED_SOURCES = [
     ("localist", "Yale Events (Localist)", "events.yale.edu", "public"),
+    ("localist_jackson", "Jackson School (own Localist)",
+     "events.jackson.yale.edu", "public"),
     ("yale_connect", "Yale Connect", "yaleconnect.yale.edu", "public + signed in"),
     ("campus_groups", "SOM Campus Groups", "groups.som.yale.edu", "public + signed in"),
     ("athletics", "Yale Athletics", "yalebulldogs.com", "public ICS"),

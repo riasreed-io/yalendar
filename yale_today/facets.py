@@ -16,6 +16,7 @@ CHANNEL_LABELS = {
 
 SOURCE_CHANNEL = {
     "localist": "public",
+    "localist_jackson": "public",
     "athletics": "public",
     "ics": "public",
     "yale_connect": "yale_connect",
@@ -26,6 +27,7 @@ SOURCE_CHANNEL = {
 
 SOURCE_LABELS = {
     "localist": "Yale Events",
+    "localist_jackson": "Jackson School",
     "athletics": "Athletics",
     "ics": "Other calendar",
     "yale_connect": "Yale Connect",
@@ -122,6 +124,8 @@ def org_name(event: dict) -> str:
 def department_for(event: dict) -> tuple[str, str]:
     if event.get("source") in {"nhfpl", "unh"}:
         return "community", "New Haven community"
+    if event.get("source") == "localist_jackson":
+        return "jackson", "Jackson School"
     if event.get("source") == "campus_groups":
         return "som", "School of Management"
     if event.get("source") == "athletics":

@@ -8,9 +8,33 @@
   --muted: #5b6770;
   --card: #ffffff;
   --line: #d9d1c3;
-  --sans: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --sans: "Source Sans 3", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --serif: "Source Serif 4", "Iowan Old Style", Palatino, serif;
+
+  /* Motion. Damping 1.0 (no overshoot) is the house default; bounce is
+     reserved for gestures that actually carried momentum. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.64, 0, 0.78, 0);   /* mirror of the above */
+  --press: 110ms var(--ease-out);
+  --sheet-progress: 0;
 }
+
+/* Type scale. Tracking tightens as text grows - letters read too far apart at
+   display sizes and too tight at caption sizes, so one value is wrong
+   somewhere. Leading moves inversely to size. */
+h1, .display {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.15rem);
+  line-height: 1.08;
+  letter-spacing: -0.021em;
+  font-optical-sizing: auto;
+}
+h2 { letter-spacing: -0.015em; line-height: 1.18; font-optical-sizing: auto; }
+h3 { letter-spacing: -0.008em; line-height: 1.28; font-optical-sizing: auto; }
+.tiny, .chip-label, .field-label, .hit-when, .month-num {
+  letter-spacing: 0.012em;   /* small text opens up slightly to stay legible */
+}
+body { letter-spacing: 0; line-height: 1.5; }
 
 * { box-sizing: border-box; }
 html, body {
@@ -1032,4 +1056,142 @@ body.chat-open .chat-launch { display: none; }
 }
 @media (max-width: 860px) {
   .src-table { font-size: 0.78rem; display: block; overflow-x: auto; }
+}
+
+/* ---------- Response: press feedback is instant ---------- */
+/* The moment lag appears, directness falls off a cliff. These fire on
+   pointerdown via fluid.js, not on click. */
+.chip, .ghost, button, .today-link, .mini-day, .hit-link, .top nav a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.chip, .ghost, button, .mini-day {
+  transition: transform var(--press), background-color var(--press),
+              box-shadow var(--press);
+}
+.is-pressed {
+  transform: scale(0.97);
+}
+.chip.is-pressed, .mini-day.is-pressed { transform: scale(0.94); }
+.ghost.is-pressed, button.is-pressed { transform: scale(0.975); }
+
+/* Hit padding: ~10px of slop around small targets, per the gesture checklist. */
+.mini-day { position: relative; }
+.mini-day::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
+
+/* ---------- Materials: translucent chrome, content scrolls under ---------- */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--yale-blue) 86%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  /* A bright top edge reads as light catching the material. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+/* Scroll edge effect instead of a hard 1px divider: the boundary only appears
+   where floating chrome actually overlaps content. */
+.top::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -14px;
+  height: 14px;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+              color-mix(in srgb, var(--yale-sand) 70%, transparent), transparent);
+}
+
+/* The sheet is a bigger surface than a chip, so it reads thicker: stronger
+   blur, deeper shadow. */
+.chat-dock[data-dock] {
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.5) inset,
+              0 12px 48px rgba(0, 0, 0, 0.26);
+  border-radius: 18px 18px 0 0;
+  /* Driven by the spring in chat.js, so CSS must not fight it. */
+  transition: none;
+  transform: translate3d(0, 100%, 0);
+  visibility: visible;
+}
+.chat-dock[data-dock].dragging { user-select: none; }
+
+/* No scrim. This is a parallel panel, not a modal task: you read the calendar
+   while you ask, so dimming the page behind it would break the flow. The
+   surface separates itself with translucency, blur and depth instead. */
+
+/* The grab affordance. Its size is the hit target, not the visible pill. */
+.chat-grabber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  cursor: grab;
+  touch-action: none;
+  flex: 0 0 auto;
+}
+.chat-grabber::before {
+  content: "";
+  width: 36px;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--yale-ink) 22%, transparent);
+}
+.chat-dock.dragging .chat-grabber { cursor: grabbing; }
+.chat-dock-head { touch-action: none; }
+
+/* Vibrancy: text over a translucent surface needs more contrast and a touch
+   more weight than flat gray, or it dissolves into whatever is behind it. */
+.chat-dock[data-dock] .bubble.bot {
+  background: color-mix(in srgb, var(--yale-sand) 88%, transparent);
+  color: var(--yale-ink);
+}
+.chat-dock[data-dock] .hit-meta { color: color-mix(in srgb, var(--muted) 86%, black); }
+
+@media (min-width: 1360px) {
+  /* Docked as a column it is structural, not floating: no scrim, no drag. */
+  .chat-dock[data-dock] {
+    transform: none !important;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .chat-grabber { display: none; }
+}
+
+/* ---------- Accessibility: three independent signals ---------- */
+@media (prefers-reduced-motion: reduce) {
+  /* Not "no feedback" - a gentler, non-vestibular equivalent. */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+  }
+  .chat-dock[data-dock] {
+    transition: opacity 180ms ease !important;
+    transform: none !important;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .chat-dock[data-dock].open { opacity: 1; visibility: visible; }
+  .is-pressed { transform: none; background-color: color-mix(in srgb, var(--yale-blue) 10%, transparent); }
+  .dots span { animation: none; opacity: 0.6; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .top { background: var(--yale-blue); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .chat-dock[data-dock] { background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .top { background: var(--yale-blue); backdrop-filter: none; }
+  .chat-dock[data-dock] { background: #fff; border: 2px solid var(--yale-blue); }
+  .chip { border-color: var(--yale-blue); }
+  .hit-meta, .sub, .tiny { color: #3a4249; }
 }

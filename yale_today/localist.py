@@ -8,6 +8,17 @@ from .models import Event, fingerprint, make_id
 LOCALIST_URL = "https://events.yale.edu/api/2/events"
 LOCALIST_PAGESIZE = 40
 
+# Yale schools can run their OWN Localist instance, separate from the central
+# events.yale.edu calendar. Jackson's 37 upcoming events live entirely on
+# events.jackson.yale.edu and never appear centrally, so querying only the
+# main calendar silently misses a whole school.
+# (source slug, base url, fallback unit name when the feed names no group)
+LOCALIST_INSTANCES: list[tuple[str, str, str]] = [
+    ("localist", "https://events.yale.edu", ""),
+    ("localist_jackson", "https://events.jackson.yale.edu",
+     "Jackson School of Global Affairs"),
+]
+
 
 def _text(value: str | None) -> str:
     if not value:
@@ -48,7 +59,8 @@ def _location(event: dict) -> str:
     return ", ".join(seen)
 
 
-def _events_from_rows(rows: list) -> list[Event]:
+def _events_from_rows(rows: list, source: str = "localist",
+                      default_host: str = "") -> list[Event]:
     """Turn Localist API rows into Events. Shared by the whole-feed and the
     per-group fetchers so both produce identical records."""
     out: list[Event] = []
@@ -65,8 +77,8 @@ def _events_from_rows(rows: list) -> list[Event]:
             loc = _location(raw)
             out.append(
                 Event(
-                    id=make_id("localist", source_id, start),
-                    source="localist",
+                    id=make_id(source, source_id, start),
+                    source=source,
                     source_id=source_id,
                     title=title,
                     start=start,
@@ -75,7 +87,7 @@ def _events_from_rows(rows: list) -> list[Event]:
                     location=loc,
                     description=_text(raw.get("description_text") or raw.get("description")),
                     url=_text(raw.get("localist_url") or raw.get("url")),
-                    host=_host(raw),
+                    host=_host(raw) or default_host,
                     tags=_tags(raw),
                     fingerprint=fingerprint(title, start, loc),
                     extra={"experience": raw.get("experience"), "status": raw.get("status")},
@@ -84,9 +96,16 @@ def _events_from_rows(rows: list) -> list[Event]:
     return out
 
 
-def fetch_localist(days: int = 14, start: str | None = None) -> list[Event]:
+def fetch_localist(
+    days: int = 14,
+    start: str | None = None,
+    base_url: str = "https://events.yale.edu",
+    source: str = "localist",
+    default_host: str = "",
+) -> list[Event]:
     events: list[Event] = []
     page = 1
+    url = f"{base_url.rstrip('/')}/api/2/events"
     with client() as http:
         while True:
             params = {"days": days, "pp": LOCALIST_PAGESIZE, "page": page}
@@ -94,13 +113,13 @@ def fetch_localist(days: int = 14, start: str | None = None) -> list[Event]:
                 params["start"] = start
             response = None
             for attempt in range(3):
-                response = http.get(LOCALIST_URL, params=params)
+                response = http.get(url, params=params)
                 if response.status_code != 503:
                     break
             response.raise_for_status()
             payload = response.json()
             rows = payload.get("events") or []
-            events.extend(_events_from_rows(rows))
+            events.extend(_events_from_rows(rows, source=source, default_host=default_host))
             # Do NOT trust payload["page"]["total"]: Localist reported 6 pages
             # on one run and 22 minutes later for the same query, silently
             # truncating the ingest to a third of the events. Page until a
