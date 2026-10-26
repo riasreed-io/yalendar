@@ -141,15 +141,12 @@ restart, so old links return error 1033:
 .tools/cloudflared tunnel --url http://127.0.0.1:8002 --no-autoupdate
 ```
 
-The stable-host goal is `yalendar.fly.dev` (see `fly.toml`), configured to deploy
-the **demo** build. Not yet deployed — it needs the CLI and a login first:
+**Deployed at https://yalendar.onrender.com** — the demo build, from
+`render.yaml`. Free instance, so it sleeps after 15 minutes idle and the next
+request waits ~50s. Pushing to `main` redeploys it.
 
-```bash
-brew install flyctl
-fly auth login
-fly secrets set SESSION_SECRET='long-random-string' OPENAI_API_KEY='sk-...'
-fly deploy
-```
+`fly.toml` is kept for a Fly deploy, but Fly no longer has a free tier: new
+accounts get 2 hours of machine runtime or 7 days, then need a card.
 
 `data/` is excluded from the image wholesale, not file by file. It holds the
 saved Yale session *and* `events.db`, which contains members-only club events

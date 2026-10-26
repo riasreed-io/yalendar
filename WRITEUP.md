@@ -3,7 +3,8 @@
 **Rias Reed** · MGT 409 · October 2026
 
 - **Repository:** https://github.com/riasreed-io/yalendar
-- **Live demo:** see the link in the submission (a frozen, public-only build)
+- **Live demo:** https://yalendar.onrender.com — a frozen, public-only build.
+  Free hosting, so the first request after a quiet spell takes ~50s to wake.
 - **Or run it yourself in 30 seconds**, with no account, no key and no
   network — the snapshot is committed:
   `pip install -r requirements.txt && YALENDAR_MODE=demo python -m yale_today serve`
