@@ -67,6 +67,13 @@ def load_prompt() -> str:
 # cost_limit here would look like a defence and do nothing.
 UNPRICED_MODELS = frozenset({"gpt-6-luna", "gpt-6-astra"})
 
+# The MGT 409 course key is licensed for gpt-6-luna and nothing else. A typo
+# in YALENDAR_MODEL would otherwise spend course budget on a model the rule
+# does not cover -- including gpt-6-astra, which is 100x the rate. Enforced
+# rather than documented, because a documented rule is one env var away from
+# being broken by accident.
+COURSE_KEY_MODELS = frozenset({"gpt-6-luna"})
+
 
 def usage_limits():
     """Per-question ceilings on requests, tool calls, tokens and spend.
@@ -124,6 +131,15 @@ def build_agent(*, web_search: bool = WEB_SEARCH_DEFAULT):
             "environment and never logged."
         )
 
+    model_name = os.environ.get("YALENDAR_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    if kind == "portkey" and model_name not in COURSE_KEY_MODELS:
+        raise RuntimeError(
+            f"The course Portkey key may only be used with "
+            f"{', '.join(sorted(COURSE_KEY_MODELS))}, not {model_name!r}. "
+            "Unset YALENDAR_MODEL, or use your own OPENAI_API_KEY for a "
+            "different model."
+        )
+
     if kind == "portkey":
         # The gateway speaks the OpenAI API, so the only differences are the
         # base URL and the provider header. It rejects the class virtual key,
@@ -145,10 +161,7 @@ def build_agent(*, web_search: bool = WEB_SEARCH_DEFAULT):
 
     # OpenAIResponsesModel, not OpenAIChatModel: the chat model rejects
     # WebSearch with "WebSearchTool is not supported with OpenAIChatModel".
-    model = OpenAIResponsesModel(
-        os.environ.get("YALENDAR_MODEL", DEFAULT_MODEL),
-        provider=provider,
-    )
+    model = OpenAIResponsesModel(model_name, provider=provider)
 
     # Native tools are capabilities in pydantic-ai 2.x. There is no
     # builtin_tools parameter.

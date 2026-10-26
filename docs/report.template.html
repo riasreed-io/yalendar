@@ -41,8 +41,12 @@ ul,ol{padding-left:1.25rem}
 li{margin:.3em 0}
 .small{font-size:.85rem;color:var(--mid)}
 @media print{
-  figure img{max-height:3.6in;object-fit:contain;object-position:left top}
-  body{font-size:10pt;line-height:1.5}
+  figure img{max-height:2.7in;object-fit:contain;object-position:left top}
+  h2{font-size:1.25rem;margin:1.7em 0 .4em;padding-top:.6em}
+  h3{margin:1.2em 0 .3em}
+  figure{margin:1em 0}
+  figcaption{font-size:7.6pt;margin-top:.3em}
+  body{font-size:9.8pt;line-height:1.46}
   .page{max-width:none;padding:0}
   h2{page-break-after:avoid;break-after:avoid}
   figure,table,pre,blockquote,.kpi,.callout{page-break-inside:avoid;break-inside:avoid}
@@ -51,7 +55,7 @@ li{margin:.3em 0}
 }
 </style></head><body><div class="page">
 
-<p class="tag">MGT 409 Final Project</p>
+<p class="tag">MGT 409 Final Project &nbsp;·&nbsp; 1 — Title + links</p>
 <h1>Yalendar</h1>
 <p class="lede">One place to see what is happening at Yale and in New Haven — ten calendars pulled into a single day, week and month view, with an AI assistant you can ask in plain English.</p>
 <div class="rule"></div>
@@ -118,6 +122,11 @@ li{margin:.3em 0}
 <p><b>The wider market</b> is vendor platforms: CampusGroups, Presence, Engage, and Corq, the student app for Engage, rated 1.9 out of 5. Each is the front end for exactly one system of record, because each is sold to the office that owns that system. None aggregates across systems. I found no startup doing AI over campus events.</p>
 
 <p><b>ChatGPT with web search</b> is the honest competitor for the question-answering part, and it loses for a concrete reason: the data is not on the open web. Campus Groups listings sit behind a sign-in, SOM's Localist instance is undiscoverable, and the residential colleges are Google Calendar IDs. A general web agent finds the central Yale calendar and stops — which, as section 2 shows, is one event in eight.</p>
+
+<figure>
+<img alt="The week view, seven columns of events across all nine sources" src="{{IMG:demo-week.png}}">
+<figcaption>The week view. Timed events sort before all-day ones in each column, so a month-long exhibition cannot push Tuesday's talks off the screen. Hovering any entry expands it in place without moving the grid.</figcaption>
+</figure>
 
 <h2>4 · The agents</h2>
 
@@ -368,7 +377,7 @@ THE DEPLOYMENT SPEND CEILING, tripping (budget set to $0.0020 for the demo)
 
 <p>The public build is a frozen, <b>public-only</b> snapshot, built by ingesting into a throwaway directory with signed-in sources disabled in code. It is public by construction, not by filtering a live database and hoping I guessed right about which rows were private. A related near-miss: the Docker image originally copied the whole <code>data/</code> directory, which holds both the saved Yale session <i>and</i> a database containing members-only club events. Deploying would have published both. <code>data/</code> is now excluded wholesale and three tests fail if that changes.</p>
 
-<h3>Evidence: 114 tests, every defence proven load-bearing</h3>
+<h3>Evidence: 115 tests, every defence proven load-bearing</h3>
 
 <p>I removed each defence and confirmed its tests go red. <b>A test that still passes with the protection deleted is not evidence.</b></p>
 
@@ -466,6 +475,6 @@ YALENDAR_MODE=demo python -m yale_today serve
 
 <p>The repository ships a frozen, public-only snapshot of 2,802 real events across 9 sources, so that needs no Yale account, no API key and no network. To enable the assistant, put <code>PORTKEY_API_KEY=...</code> in a <code>.env</code> file in the repo folder <i>or the folder above it</i> — both are checked, in that order. <code>OPENAI_API_KEY</code> works too. Without either, Ask falls back to the free keyword search and says so on screen.</p>
 
-<p class="small" style="margin-top:2.5em;color:#8891a5">Yalendar is not an official Yale product. 114 tests: <code>python -m pytest tests -q</code>.</p>
+<p class="small" style="margin-top:2.5em;color:#8891a5">Yalendar is not an official Yale product. 115 tests: <code>python -m pytest tests -q</code>.</p>
 
 </div></body></html>

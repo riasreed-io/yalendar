@@ -1,18 +1,19 @@
 # Yalendar
 
-One place to see what's happening at Yale and in New Haven, instead of checking five
-calendars. Aggregates Yale Events (Localist), Yale Connect, SOM Campus Groups, Yale
-Athletics, and New Haven community calendars into day, week, and month views.
+## → Live app: **https://yalendar.onrender.com**
+
+Free hosting, so the first request after a quiet spell takes ~50 seconds to
+wake. Everything works there with no account and no key.
+
+One place to see what's happening at Yale and in New Haven, instead of checking
+five calendars. Aggregates Yale Events (Localist ×3), Yale Connect, SOM Campus
+Groups, Yale Athletics, the residential colleges and two New Haven community
+calendars into day, week and month views, with an AI assistant you can ask in
+plain English.
 
 Not an official Yale product. The internal package is still named `yale_today`.
 
-## Live app
-
-**https://yalendar.onrender.com** — free hosting, so the first request after
-a quiet spell takes ~50 seconds to wake. Everything works there with no
-account.
-
-## Or run it from a fresh clone, in about two minutes
+## Run it from a fresh clone, in about two minutes
 
 The repository ships a frozen, public-only snapshot of **2,802 real events
 across 9 sources**, so this needs no Yale login, no API key and no network.
@@ -37,6 +38,23 @@ YALENDAR_MODE=demo python -m yale_today serve     # same command; the key is pic
 
 Signing into Yale Connect / Campus Groups is optional, personal-machine-only,
 and needs two extra packages: `pip install -r requirements-signin.txt`.
+
+### The small test dataset, and how to switch to the full one
+
+The live database is ~8,500 events and is **not** in the repository — it holds
+events that are only visible because someone signed in. What ships instead is
+`demo/snapshot.json.gz`: a frozen, public-only sample of **2,802 real events
+across 9 sources**, about 0.8 MB, rebuilt into a database at startup.
+
+| You want | Command |
+|---|---|
+| The shipped sample (default for graders) | `YALENDAR_MODE=demo python -m yale_today serve` |
+| Live public sources, fetched now | `python -m yale_today ingest --days 45` then `python -m yale_today serve` |
+| Rebuild the sample from live sources | `python scripts/make_demo.py --rebuild` |
+| See what is in the sample | `python scripts/make_demo.py --inspect` |
+
+`python -m yale_today mode` prints which build is running and what it is
+allowed to do.
 
 ## Three builds, one codebase
 

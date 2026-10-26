@@ -1066,3 +1066,23 @@ def test_the_app_shows_what_each_answer_cost(monkeypatch, tmp_path):
     from yale_today.agent import budget
 
     assert data["budget_total_usd"] == budget.MAX_COST_TOTAL_USD
+
+
+def test_the_course_key_is_locked_to_the_model_the_course_allows(monkeypatch):
+    """MGT 409 licenses the Portkey key for gpt-6-luna only. A typo in
+    YALENDAR_MODEL would otherwise spend course budget on gpt-6-astra at
+    100x the rate, so the rule is enforced rather than documented."""
+    from yale_today.agent import agent as agent_mod
+
+    monkeypatch.setattr(agent_mod, "_load_env", lambda: None)
+    monkeypatch.setenv("PORTKEY_API_KEY", "pk-test")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    monkeypatch.setenv("YALENDAR_MODEL", "gpt-6-astra")
+    with pytest.raises(RuntimeError, match="may only be used with"):
+        agent_mod.build_agent()
+
+    # The allowed model still builds, and is the default.
+    monkeypatch.delenv("YALENDAR_MODEL")
+    assert agent_mod.DEFAULT_MODEL in agent_mod.COURSE_KEY_MODELS
+    assert agent_mod.build_agent() is not None
