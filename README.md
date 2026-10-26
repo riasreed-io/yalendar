@@ -6,19 +6,37 @@ Athletics, and New Haven community calendars into day, week, and month views.
 
 Not an official Yale product. The internal package is still named `yale_today`.
 
-## See it in 30 seconds, with no account
+## Live app
 
-The repository ships a frozen, public-only snapshot of 2,802 real events
-across 9 sources. No Yale login, no API key, no network calls.
+**https://yalendar.onrender.com** — free hosting, so the first request after
+a quiet spell takes ~50 seconds to wake. Everything works there with no
+account.
+
+## Or run it from a fresh clone, in about two minutes
+
+The repository ships a frozen, public-only snapshot of **2,802 real events
+across 9 sources**, so this needs no Yale login, no API key and no network.
 
 ```bash
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 YALENDAR_MODE=demo python -m yale_today serve
 ```
 
-Open <http://127.0.0.1:8000/>. The clock is pinned to the day the snapshot
-was taken, so every view is populated; a banner on every page says which day
-that is.
+Open <http://127.0.0.1:8000/>. The clock is pinned to the day the snapshot was
+taken, so every view is populated; a banner on every page says which day that is.
+
+**To enable the AI assistant**, put `PORTKEY_API_KEY=...` in a `.env` file
+either in this folder or **one folder above it** — both are checked, in that
+order. `OPENAI_API_KEY` works too. Without either, Ask falls back to a free
+keyword search and says so on screen.
+
+```bash
+YALENDAR_MODE=demo python -m yale_today serve     # same command; the key is picked up automatically
+```
+
+Signing into Yale Connect / Campus Groups is optional, personal-machine-only,
+and needs two extra packages: `pip install -r requirements-signin.txt`.
 
 ## Three builds, one codebase
 

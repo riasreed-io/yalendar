@@ -1,0 +1,6 @@
+# Only for signing into Yale Connect / SOM Campus Groups on your own
+# machine. Not needed to run the app, and refused outright in demo and
+# public mode -- see yale_today/session_login.py.
+-r requirements.txt
+playwright>=1.49.0
+pypdf>=5.0.0
