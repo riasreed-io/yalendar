@@ -12,12 +12,12 @@ primary_region = "ewr"
   # fetching, no writes, no Yale session. See yale_today/config.py.
   YALENDAR_MODE = "demo"
   # Visitors may use the AI assistant, but the total bill for doing so is
-  # bounded at one dollar for the life of the deployment -- not per day,
-  # which would be a recurring charge. At gpt-6-luna rates that is roughly
-  # 2,300 questions; the per-day question cap binds long before the money
-  # does. See yale_today/agent/budget.py.
+  # bounded at 25 cents for the life of the deployment -- not per day,
+  # which would be a recurring charge. At the measured $0.00076 a question
+  # that is about 330 questions; the per-day cap of 60 binds long before
+  # the money does. See yale_today/agent/budget.py.
   YALENDAR_PUBLIC_AGENT = "1"
-  YALENDAR_MAX_COST_TOTAL = "1.00"
+  YALENDAR_MAX_COST_TOTAL = "0.25"
   YALENDAR_MAX_QUESTIONS_PER_DAY = "60"
   YALENDAR_MAX_COST_PER_DAY = "0.10"
   YALENDAR_MAX_QUESTIONS_PER_HOUR = "5"
