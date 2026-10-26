@@ -492,8 +492,10 @@ def _agent_reply(question: str, request: Request | None) -> dict:
         result = run_agent(question)
     except Exception as exc:
         return {"note": f"{exc.__class__.__name__}: {exc}"[:200]}
-    budget.record(caller, result.get("usage") or {})
+    cost = budget.record(caller, result.get("usage") or {})
     result["reply"] = _plain(result.get("reply") or "")
+    result["cost_usd"] = cost
+    result["spent_total_usd"] = allowance.spent_total + cost
     return result
 
 
@@ -511,6 +513,12 @@ def _plain(text: str) -> str:
     return _MD.sub("", text)
 
 
+def _budget_total() -> float:
+    from .agent import budget
+
+    return budget.MAX_COST_TOTAL_USD
+
+
 def _ask_payload(question: str, request: Request | None = None) -> dict:
     """Shared by the page and the fetch endpoint so both answer identically."""
     result = assistant.answer(question)
@@ -521,6 +529,12 @@ def _ask_payload(question: str, request: Request | None = None) -> dict:
         "engine": "agent" if agent.get("reply") else "local",
         "tools_used": agent.get("tools_used") or [],
         "note": agent.get("note", ""),
+        # Shown under every AI answer. Measured, not estimated: these are
+        # the counts the provider returned for this exact run.
+        "usage": agent.get("usage") or {},
+        "cost_usd": agent.get("cost_usd"),
+        "spent_total_usd": agent.get("spent_total_usd"),
+        "budget_total_usd": _budget_total(),
         "local_reply": result.reply,
         "events": [
             {

@@ -152,9 +152,28 @@
     // model to keyword matching looks like the model got worse.
     var tag = el("p", "engine-tag");
     if (data.engine === "agent") {
-      tag.textContent = "AI assistant"
-        + (data.tools_used && data.tools_used.length
-            ? " · " + data.tools_used.join(", ") : "");
+      var bits = ["AI assistant"];
+      if (data.tools_used && data.tools_used.length) {
+        bits.push(data.tools_used.join(", "));
+      }
+      // Show what this answer cost. Measured counts from the provider,
+      // not an estimate -- the same numbers the cost ceiling is enforced
+      // against, so the figure on screen is the figure being billed.
+      var u = data.usage || {};
+      if (u.input_tokens) {
+        bits.push(u.input_tokens.toLocaleString() + " in"
+          + (u.cache_read_tokens
+              ? " (" + u.cache_read_tokens.toLocaleString() + " cached)" : "")
+          + " · " + (u.output_tokens || 0).toLocaleString() + " out");
+      }
+      if (typeof data.cost_usd === "number") {
+        bits.push("$" + data.cost_usd.toFixed(5));
+      }
+      if (typeof data.spent_total_usd === "number" && data.budget_total_usd) {
+        bits.push("$" + data.spent_total_usd.toFixed(4) + " of $"
+          + data.budget_total_usd.toFixed(2) + " budget used");
+      }
+      tag.textContent = bits.join(" · ");
     } else {
       tag.textContent = data.note ? "Keyword search · " + data.note
                                   : "Keyword search";

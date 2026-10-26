@@ -23,9 +23,23 @@
     <div class="bubble me"><p>{{ answer.question }}</p></div>
     <div class="bubble bot">
       <p>{{ answer.reply }}</p>
-      <p class="engine-tag">{% if answer.engine == 'agent' %}AI assistant{% if answer.tools_used %} ·
-        {{ answer.tools_used | join(', ') }}{% endif %}{% else %}Keyword search{% if answer.note %} ·
-        {{ answer.note }}{% endif %}{% endif %}</p>
+      <p class="engine-tag">
+      {%- if answer.engine == 'agent' -%}
+        AI assistant
+        {%- if answer.tools_used %} · {{ answer.tools_used | join(', ') }}{% endif -%}
+        {%- if answer.usage and answer.usage.input_tokens %} ·
+          {{ "{:,}".format(answer.usage.input_tokens) }} in
+          {%- if answer.usage.cache_read_tokens %} ({{ "{:,}".format(answer.usage.cache_read_tokens) }} cached){% endif %} ·
+          {{ "{:,}".format(answer.usage.output_tokens or 0) }} out
+        {%- endif -%}
+        {%- if answer.cost_usd is not none %} · ${{ "%.5f"|format(answer.cost_usd) }}{% endif -%}
+        {%- if answer.spent_total_usd is not none %} ·
+          ${{ "%.4f"|format(answer.spent_total_usd) }} of ${{ "%.2f"|format(answer.budget_total_usd) }} budget used
+        {%- endif -%}
+      {%- else -%}
+        Keyword search{% if answer.note %} · {{ answer.note }}{% endif %}
+      {%- endif -%}
+      </p>
       {% if answer.events %}
       <ul class="hits">
         {% for event in answer.events %}

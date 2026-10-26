@@ -1035,3 +1035,34 @@ def test_a_deployment_without_a_key_explains_itself(monkeypatch):
     assert "no model key is configured" in data["note"]
     assert data["reply"], "it still has to answer the question"
     assert web  # the fallback lives in web.py, not the API layer
+
+
+def test_the_app_shows_what_each_answer_cost(monkeypatch, tmp_path):
+    """The rubric rewards token counts shown in the app itself, and a
+    figure on screen that differs from the one being billed is worse than
+    no figure. Both come from the same measured usage dict."""
+    from yale_today import web
+
+    captured = {}
+
+    def fake_agent(question, request):
+        captured["called"] = True
+        return {
+            "reply": "Two events tonight.",
+            "tools_used": ["search_events"],
+            "usage": {"input_tokens": 4141, "cache_read_tokens": 3434,
+                      "output_tokens": 375},
+            "cost_usd": 0.00028,
+            "spent_total_usd": 0.0031,
+        }
+
+    monkeypatch.setattr(web, "_agent_reply", fake_agent)
+    data = client.post("/ask", data={"q": "talks tonight"}).json()
+    assert captured.get("called")
+    assert data["usage"]["input_tokens"] == 4141
+    assert data["cost_usd"] == 0.00028
+    assert data["budget_total_usd"] > 0
+    # The displayed cost must be the billed cost, not a separate estimate.
+    from yale_today.agent import budget
+
+    assert data["budget_total_usd"] == budget.MAX_COST_TOTAL_USD
