@@ -1,0 +1,73 @@
+<svg viewBox="0 0 880 470" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="One agent with four read-only tools over a scrubbed SQLite database"
+     style="width:100%;height:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5b6478"/>
+    </marker>
+    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a3066"/><stop offset="1" stop-color="#0d2448"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="20" y="24" width="150" height="52" rx="12" fill="#fff" stroke="#c9d2e0"/>
+  <text x="95" y="46" text-anchor="middle" font-size="13" font-weight="600" fill="#1c2230">Student</text>
+  <text x="95" y="63" text-anchor="middle" font-size="11" fill="#5b6478">plain-English question</text>
+  <line x1="170" y1="50" x2="268" y2="50" stroke="#5b6478" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <rect x="270" y="14" width="340" height="72" rx="14" fill="url(#g1)"/>
+  <text x="440" y="40" text-anchor="middle" font-size="14" font-weight="650" fill="#fff">Yalendar agent</text>
+  <text x="440" y="58" text-anchor="middle" font-size="11" fill="#b9c9e6">pydantic-ai 2.48 · gpt-6-luna · prompts/prompt.md</text>
+  <text x="440" y="74" text-anchor="middle" font-size="10" fill="#8fa6cc">6 requests · 6 tool calls · 40k tokens per question</text>
+
+  <line x1="440" y1="86" x2="440" y2="106" stroke="#5b6478" stroke-width="1.6"/>
+  <text x="452" y="102" font-size="10" fill="#5b6478">four read-only tools</text>
+  <line x1="110" y1="106" x2="770" y2="106" stroke="#c9d2e0" stroke-width="1.4"/>
+
+  <g font-size="11" fill="#1c2230">
+    <line x1="110" y1="106" x2="110" y2="126" stroke="#5b6478" stroke-width="1.4" marker-end="url(#a)"/>
+    <rect x="24" y="128" width="172" height="76" rx="10" fill="#fff" stroke="#c9d2e0"/>
+    <text x="36" y="148" font-weight="650" font-size="11.5">data_horizon</text>
+    <text x="36" y="166" fill="#5b6478" font-size="10">today's date, and how far</text>
+    <text x="36" y="180" fill="#5b6478" font-size="10">the loaded data actually</text>
+    <text x="36" y="194" fill="#5b6478" font-size="10">runs</text>
+
+    <line x1="330" y1="106" x2="330" y2="126" stroke="#5b6478" stroke-width="1.4" marker-end="url(#a)"/>
+    <rect x="244" y="128" width="172" height="76" rx="10" fill="#fff" stroke="#c9d2e0"/>
+    <text x="256" y="148" font-weight="650" font-size="11.5">search_events</text>
+    <text x="256" y="166" fill="#5b6478" font-size="10">exact date range, plus</text>
+    <text x="256" y="180" fill="#5b6478" font-size="10">category, school, source,</text>
+    <text x="256" y="194" fill="#5b6478" font-size="10">keyword</text>
+
+    <line x1="550" y1="106" x2="550" y2="126" stroke="#5b6478" stroke-width="1.4" marker-end="url(#a)"/>
+    <rect x="464" y="128" width="172" height="76" rx="10" fill="#fff" stroke="#c9d2e0"/>
+    <text x="476" y="148" font-weight="650" font-size="11.5">search_events_in_words</text>
+    <text x="476" y="166" fill="#5b6478" font-size="10">"free food this week" —</text>
+    <text x="476" y="180" fill="#5b6478" font-size="10">the same parser the site's</text>
+    <text x="476" y="194" fill="#5b6478" font-size="10">own search box uses</text>
+
+    <line x1="770" y1="106" x2="770" y2="126" stroke="#5b6478" stroke-width="1.4" marker-end="url(#a)"/>
+    <rect x="684" y="128" width="172" height="76" rx="10" fill="#fff" stroke="#c9d2e0"/>
+    <text x="696" y="148" font-weight="650" font-size="11.5">list_filters</text>
+    <text x="696" y="166" fill="#5b6478" font-size="10">the category, school and</text>
+    <text x="696" y="180" fill="#5b6478" font-size="10">source slugs the search</text>
+    <text x="696" y="194" fill="#5b6478" font-size="10">will accept</text>
+  </g>
+
+  <line x1="440" y1="206" x2="440" y2="238" stroke="#5b6478" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <rect x="214" y="240" width="452" height="62" rx="12" fill="#fff6e0" stroke="#e3c472"/>
+  <text x="440" y="263" text-anchor="middle" font-size="12.5" font-weight="650" fill="#4a3a08">guard.scrub()</text>
+  <text x="440" y="281" text-anchor="middle" font-size="10.5" fill="#6b5718">every title, host and venue — written by strangers — is normalised,</text>
+  <text x="440" y="294" text-anchor="middle" font-size="10.5" fill="#6b5718">stripped and pattern-matched before the model ever sees it</text>
+
+  <line x1="440" y1="302" x2="440" y2="332" stroke="#5b6478" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <rect x="214" y="334" width="452" height="58" rx="12" fill="#eef2f8" stroke="#c9d2e0"/>
+  <text x="440" y="357" text-anchor="middle" font-size="12.5" font-weight="650" fill="#1c2230">SQLite · 8,537 events · 9 live sources</text>
+  <text x="440" y="376" text-anchor="middle" font-size="10.5" fill="#5b6478">Localist ×3 · Yale Connect · SOM Campus Groups · athletics · res colleges · NHFPL · UNH</text>
+
+  <rect x="214" y="408" width="452" height="44" rx="10" fill="none" stroke="#c9d2e0" stroke-dasharray="4 3"/>
+  <text x="440" y="426" text-anchor="middle" font-size="10.5" font-weight="600" fill="#5b6478">No tool writes, sends, RSVPs or spends.</text>
+  <text x="440" y="442" text-anchor="middle" font-size="10" fill="#5b6478">The worst a successful injection achieves is a wrong sentence.</text>
+</svg>
