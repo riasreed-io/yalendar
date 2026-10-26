@@ -20,6 +20,13 @@ services:
     envVars:
       # sync: false means Render prompts for the value when the Blueprint
       # is first created, and never stores it in this file.
+      #
+      # PORTKEY_API_KEY is OPTIONAL and deliberately left blank by default.
+      # The MGT 409 key is shared course infrastructure, and the $0.25
+      # ceiling in agent/budget.py lives inside this app -- it limits what
+      # visitors can spend through the UI, not what someone could spend
+      # with the key itself. Without it the site is fully functional and
+      # Ask falls back to the free keyword search, which says so on screen.
       - key: PORTKEY_API_KEY
         sync: false
       - key: SESSION_SECRET

@@ -478,7 +478,10 @@ def _agent_reply(question: str, request: Request | None) -> dict:
     if request is None or not _agent_allowed(request):
         return {}
     if not credential()[0]:
-        return {}
+        # Say so. A deployment with no key looks identical to a broken
+        # agent otherwise, and the honest reason is short.
+        return {"note": "no model key is configured on this deployment, so "
+                        "this is the free search"}
 
     caller = (request.client.host if request.client else "") or ""
     allowance = budget.check(caller)

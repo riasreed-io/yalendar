@@ -1018,3 +1018,20 @@ def test_the_blueprint_points_at_an_endpoint_that_exists():
     assert "sync: false" in blueprint
     for leaked in ("PORTKEY_API_KEY:", "sk-", "pk-"):
         assert leaked not in blueprint.replace("- key: PORTKEY_API_KEY", "")
+
+
+def test_a_deployment_without_a_key_explains_itself(monkeypatch):
+    """The public build may ship with no model credential. Falling back
+    silently makes a deliberate choice look like a broken agent."""
+    from yale_today import web
+    from yale_today.agent import agent as agent_mod
+
+    monkeypatch.setattr(agent_mod, "_load_env", lambda: None)
+    monkeypatch.delenv("PORTKEY_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    data = client.post("/ask", data={"q": "talks this week"}).json()
+    assert data["engine"] == "local"
+    assert "no model key is configured" in data["note"]
+    assert data["reply"], "it still has to answer the question"
+    assert web  # the fallback lives in web.py, not the API layer
