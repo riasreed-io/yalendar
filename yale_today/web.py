@@ -293,6 +293,21 @@ def _filter_href(path: str, state: dict):
     return href, toggle
 
 
+@app.get("/healthz")
+def healthz():
+    """Liveness probe for the host's health check.
+
+    Deliberately trivial: no template, no filtering, one indexed count.
+    A probe that renders the day view would make a slow page look like a
+    dead service and roll back a working deploy.
+    """
+    con = db.connect()
+    count = con.execute("SELECT COUNT(*) FROM events").fetchone()[0]
+    con.close()
+    return {"ok": True, "mode": MODE, "events": count,
+            "today": today_local().isoformat()}
+
+
 @app.get("/login", response_class=HTMLResponse)
 def login_form(request: Request, error: str | None = None, invite: str | None = None):
     if _logged_in(request):

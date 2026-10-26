@@ -1,0 +1,26 @@
+# Render Blueprint. "New + -> Blueprint" reads this and fills the form in,
+# so the only things left to choose are the two secrets below.
+#
+# Nothing here is Render-specific beyond the file itself: the image already
+# carries the run mode and all four spend ceilings (see Dockerfile), so a
+# deploy that ignored this file entirely would still be safe.
+services:
+  - type: web
+    name: yalendar
+    runtime: docker
+    plan: free
+    region: virginia          # closest US region to New Haven
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # Trivial JSON endpoint. Pointing the probe at "/" would make a slow
+    # day view look like a dead service and roll back a good deploy.
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      # sync: false means Render prompts for the value when the Blueprint
+      # is first created, and never stores it in this file.
+      - key: PORTKEY_API_KEY
+        sync: false
+      - key: SESSION_SECRET
+        sync: false

@@ -993,3 +993,28 @@ def test_the_image_carries_its_own_spend_ceilings():
     # And the code default has to be safe on its own, for anyone who runs
     # it outside the image entirely.
     assert 0 < budget.MAX_COST_TOTAL_USD <= 1.00
+
+
+def test_the_health_check_is_cheap_and_truthful():
+    """The host rolls a deploy back when this fails, so it must not depend
+    on templates, filters or the agent."""
+    r = client.get("/healthz")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] is True
+    assert body["events"] > 0
+    assert body["mode"] in ("personal", "demo", "public")
+
+
+def test_the_blueprint_points_at_an_endpoint_that_exists():
+    """A healthCheckPath with no route behind it fails every deploy."""
+    import re as _re
+
+    blueprint = (REPO / "render.yaml").read_text()
+    match = _re.search(r"healthCheckPath:\s*(\S+)", blueprint)
+    assert match, "no healthCheckPath in render.yaml"
+    assert client.get(match.group(1)).status_code == 200
+    # And the secrets must be prompted for, never committed.
+    assert "sync: false" in blueprint
+    for leaked in ("PORTKEY_API_KEY:", "sk-", "pk-"):
+        assert leaked not in blueprint.replace("- key: PORTKEY_API_KEY", "")
