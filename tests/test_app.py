@@ -372,14 +372,30 @@ def test_question_length_is_capped():
 
 
 def test_one_question_has_a_spend_ceiling():
+    """Every question is bounded, whichever provider is configured.
+
+    cost_limit is only asserted where pydantic-ai can price the model; on
+    the course gateway it cannot, and dollars are enforced by budget.py
+    instead (see test_an_unenforceable_cost_limit_is_not_pretended).
+    """
     from decimal import Decimal
+
+    from yale_today.agent import agent as agent_mod
     from yale_today.agent.agent import usage_limits
 
     limits = usage_limits()
     assert limits.request_limit and limits.request_limit <= 10, "no loop ceiling"
     assert limits.tool_calls_limit and limits.tool_calls_limit <= 10
     assert limits.total_tokens_limit and limits.total_tokens_limit <= 100_000
-    assert limits.cost_limit and limits.cost_limit <= Decimal("1.00")
+
+    model = os.environ.get("YALENDAR_MODEL", agent_mod.DEFAULT_MODEL)
+    if model in agent_mod.UNPRICED_MODELS:
+        from yale_today.agent import budget
+
+        assert 0 < budget.MAX_COST_TOTAL_USD <= 5.00, \
+            "dollars have to be capped somewhere, and not loosely"
+    else:
+        assert limits.cost_limit and limits.cost_limit <= Decimal("1.00")
 
 
 def test_billed_web_search_is_off_by_default():
@@ -469,11 +485,20 @@ def test_the_agent_has_no_tool_that_changes_anything():
 
 
 def test_the_agent_imports_without_any_credentials(monkeypatch):
-    """Import-safety matters: the test suite and CI must never need a key."""
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    """Import-safety matters: the test suite and CI must never need a key.
+
+    Both credentials have to go, and _load_env has to be stubbed: it reads
+    .env files back in, so deleting a variable the file also sets puts it
+    straight back and the test passes for the wrong reason.
+    """
+    from yale_today.agent import agent as agent_mod
     from yale_today.agent.agent import build_agent
 
-    with pytest.raises(RuntimeError, match="OPENAI_API_KEY"):
+    monkeypatch.setattr(agent_mod, "_load_env", lambda: None)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("PORTKEY_API_KEY", raising=False)
+
+    with pytest.raises(RuntimeError, match="PORTKEY_API_KEY"):
         build_agent()
 
 
@@ -825,3 +850,95 @@ def test_the_image_carries_no_personal_data_directory_at_all():
 def test_the_shared_build_defaults_to_demo_mode():
     assert 'ENV YALENDAR_MODE=demo' in (REPO / "Dockerfile").read_text()
     assert 'YALENDAR_MODE = "demo"' in (REPO / "fly.toml").read_text()
+
+
+def test_the_total_budget_is_a_ceiling_not_a_daily_allowance(monkeypatch, tmp_path):
+    """A daily cap is a recurring charge. $0.10/day is $36 a year for a
+    project nobody is paying for, so the binding limit is a lifetime total."""
+    budget = _fresh_budget(monkeypatch, tmp_path, MAX_COST_TOTAL_USD=0.05,
+                           MAX_QUESTIONS_PER_DAY=10_000,
+                           MAX_COST_PER_DAY_USD=10_000,
+                           MAX_QUESTIONS_PER_IP_PER_HOUR=10_000)
+    budget.record("1.2.3.4", {"input_tokens": 400_000, "output_tokens": 40_000})
+    blocked = budget.check("1.2.3.4")
+    assert not blocked.ok
+    assert "total AI budget" in blocked.reason
+    # And it does not reset with the calendar: a different caller on a
+    # different day still gets nothing.
+    assert not budget.check("5.6.7.8").ok
+
+
+def test_cached_and_written_tokens_are_not_billed_as_fresh_input():
+    """input_tokens is inclusive of cache reads and writes. Charging the
+    plain rate on the whole thing would overstate every cost in the writeup."""
+    from yale_today.agent import budget
+
+    everything_fresh = budget.estimate_cost({"input_tokens": 1_000_000})
+    mostly_cached = budget.estimate_cost(
+        {"input_tokens": 1_000_000, "cache_read_tokens": 900_000})
+    assert mostly_cached < everything_fresh
+    expected = (100_000 * budget.PRICE_IN + 900_000 * budget.PRICE_CACHED) / 1_000_000
+    assert abs(mostly_cached - expected) < 1e-9
+
+
+def test_the_agent_uses_the_course_gateway_when_one_is_configured(monkeypatch):
+    from yale_today.agent import agent as agent_mod
+
+    monkeypatch.setenv("PORTKEY_API_KEY", "pk-test")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    assert agent_mod.credential()[0] == "portkey"
+    monkeypatch.delenv("PORTKEY_API_KEY")
+    assert agent_mod.credential()[0] == "openai"
+
+
+def test_no_credential_is_a_clear_error_not_a_crash(monkeypatch):
+    from yale_today.agent import agent as agent_mod
+
+    monkeypatch.setattr(agent_mod, "_load_env", lambda: None)
+    monkeypatch.delenv("PORTKEY_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="PORTKEY_API_KEY"):
+        agent_mod.build_agent()
+
+
+def test_an_unenforceable_cost_limit_is_not_pretended(monkeypatch):
+    """pydantic-ai cannot price the course gateway's models and only warns.
+    A cost_limit there would read as a defence and do nothing, so dollars
+    are enforced in budget.py instead -- and that has to stay true."""
+    from yale_today.agent import agent as agent_mod
+
+    monkeypatch.setenv("YALENDAR_MODEL", "gpt-6-luna")
+    assert agent_mod.usage_limits().cost_limit is None
+    # The per-run ceiling that does bind on the gateway.
+    assert agent_mod.usage_limits().total_tokens_limit == agent_mod.MAX_TOTAL_TOKENS
+
+    monkeypatch.setenv("YALENDAR_MODEL", "gpt-5-mini")
+    assert agent_mod.usage_limits().cost_limit is not None
+
+
+def test_usage_is_actually_captured_from_a_run():
+    """Regression: result.usage is a property on pydantic-ai 2.48 and was a
+    method before. Calling it raised TypeError into a bare except, so every
+    run recorded {} and every dollar cap silently billed zero."""
+    from yale_today.agent.agent import _usage
+
+    class FakeUsage:
+        requests = 3
+        input_tokens = 4408
+        cache_read_tokens = 3249
+        cache_write_tokens = 1150
+        output_tokens = 430
+        tool_calls = 2
+        total_tokens = 4838
+
+    class AsProperty:
+        usage = FakeUsage()
+
+    class AsMethod:
+        def usage(self):
+            return FakeUsage()
+
+    for result in (AsProperty(), AsMethod()):
+        got = _usage(result)
+        assert got["input_tokens"] == 4408, type(result).__name__
+        assert got["output_tokens"] == 430

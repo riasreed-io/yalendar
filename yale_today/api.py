@@ -336,9 +336,13 @@ def _agent_allowed(request: Request) -> bool:
 def agent_status(request: Request) -> dict:
     from .agent import budget
 
+    from .agent.agent import credential
+
+    kind, _key = credential()
     return {
         "allowed": _agent_allowed(request),
-        "configured": bool(os.environ.get("OPENAI_API_KEY", "").strip()),
+        "configured": bool(kind),
+        "credential": kind or "none",
         "public": os.environ.get("YALENDAR_PUBLIC_AGENT") == "1",
         "budget": budget.status(),
     }

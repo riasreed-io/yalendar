@@ -15,8 +15,9 @@ see.
 
 Runs the sample questions through the real model, reads the token counts
 back off each result, and prints measured cost per run and per user per
-month. Appends every run to output/audit_trail.json. Needs OPENAI_API_KEY
-in .env. At gpt-5-mini with web search off this costs a few cents in total.
+month. Appends every run to output/audit_trail.json. Needs PORTKEY_API_KEY
+(the MGT 409 gateway key) or OPENAI_API_KEY. At gpt-6-luna with web search
+off, ten questions costs well under a cent.
 
 Prices are per million tokens and change; override with --price-in /
 --price-cached / --price-out rather than trusting the defaults.
@@ -54,10 +55,12 @@ QUESTIONS = [
     "when is the next home football game",
 ]
 
-# Per million tokens. Defaults are gpt-5-mini at the time of writing.
-PRICE_IN = 0.25
-PRICE_CACHED = 0.025
-PRICE_OUT = 2.00
+# Per million tokens. gpt-6-luna at the MGT 409 course rate. Kept in sync
+# with yale_today/agent/budget.py, which enforces the ceiling.
+PRICE_IN = 0.10
+PRICE_CACHED = 0.01
+PRICE_CACHE_WRITE = 0.125
+PRICE_OUT = 0.50
 # Billed per call, on top of tokens, if the native web_search is enabled.
 PRICE_WEB_SEARCH_PER_CALL = 0.01
 
@@ -144,14 +147,17 @@ def live(args: argparse.Namespace) -> None:
     k = len(rows)
     avg = lambda key: sum(r.get(key, 0) or 0 for r in rows) / k  # noqa: E731
     inp, cached, out = avg("input_tokens"), avg("cache_read_tokens"), avg("output_tokens")
-    fresh = max(inp - cached, 0)
+    written = avg("cache_write_tokens")
+    # input_tokens is inclusive of cache reads and writes.
+    fresh = max(inp - cached - written, 0)
     cost = (fresh * args.price_in + cached * args.price_cached
-            + out * args.price_out) / 1_000_000
+            + written * PRICE_CACHE_WRITE + out * args.price_out) / 1_000_000
     if WEB_SEARCH_DEFAULT:
         cost += PRICE_WEB_SEARCH_PER_CALL
 
     print(f"\naverages over {k} runs")
-    print(f"  input           {inp:9,.0f} tok  ({cached:,.0f} cached, {fresh:,.0f} fresh)")
+    print(f"  input           {inp:9,.0f} tok  ({cached:,.0f} cached, "
+          f"{written:,.0f} cache-write, {fresh:,.0f} fresh)")
     print(f"  output          {out:9,.0f} tok")
     print(f"  cost per run    ${cost:9.5f}")
     print("\nat these numbers")

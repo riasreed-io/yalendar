@@ -16,6 +16,8 @@ from typing import Any
 from dotenv import load_dotenv
 
 from ..config import ROOT
+
+os.environ.setdefault("PYDANTIC_AI_NO_BANNER", "1")
 from .models import AgentReply, ToolCallRecord
 from .tools import ALL_TOOLS
 
@@ -23,7 +25,12 @@ PROMPT_PATH = ROOT / "prompts" / "prompt.md"
 AUDIT_PATH = ROOT / "output" / "audit_trail.json"
 RESULT_PREVIEW_CHARS = 400
 
-DEFAULT_MODEL = "gpt-5-mini"
+# MGT 409 issues a Portkey gateway key, not a raw OpenAI one, and the course
+# budget assumes gpt-6-luna. Following the class stack means the agent runs on
+# the key Rias already has instead of waiting on a personal OpenAI account.
+DEFAULT_MODEL = "gpt-6-luna"
+PORTKEY_BASE_URL = os.environ.get(
+    "PORTKEY_BASE_URL", "https://api.portkey.ai/v1").rstrip("/")
 
 # Ceilings for a single question. A campus-events answer is one or two tool
 # calls and a short paragraph; anything beyond this is a loop or an attack,
@@ -55,18 +62,51 @@ def load_prompt() -> str:
     return PROMPT_PATH.read_text(encoding="utf-8").strip()
 
 
+# Models pydantic-ai has no price table for -- the MGT 409 gateway's own.
+# It cannot enforce a cost_limit on these and only emits a warning, so a
+# cost_limit here would look like a defence and do nothing.
+UNPRICED_MODELS = frozenset({"gpt-6-luna", "gpt-6-astra"})
+
+
 def usage_limits():
-    """Per-question ceilings on requests, tool calls, tokens and spend."""
+    """Per-question ceilings on requests, tool calls, tokens and spend.
+
+    Dollars are only passed to pydantic-ai when it can actually price the
+    model. For the course gateway it cannot, so the binding per-run limit
+    is tokens, and dollars are enforced in budget.py against the course
+    price table. Leaving an unenforceable cost_limit in place was worse
+    than not setting one: the warning is easy to miss and the ceiling
+    reads as present in the code.
+    """
     from decimal import Decimal
 
     from pydantic_ai.usage import UsageLimits
 
-    return UsageLimits(
-        request_limit=MAX_REQUESTS,
-        tool_calls_limit=MAX_TOOL_CALLS,
-        total_tokens_limit=MAX_TOTAL_TOKENS,
-        cost_limit=Decimal(MAX_COST_USD),
-    )
+    limits: dict = {
+        "request_limit": MAX_REQUESTS,
+        "tool_calls_limit": MAX_TOOL_CALLS,
+        "total_tokens_limit": MAX_TOTAL_TOKENS,
+    }
+    if os.environ.get("YALENDAR_MODEL", DEFAULT_MODEL) not in UNPRICED_MODELS:
+        limits["cost_limit"] = Decimal(MAX_COST_USD)
+    return UsageLimits(**limits)
+
+
+def credential() -> tuple[str, str]:
+    """Which credential is configured: ("portkey"|"openai"|"", key).
+
+    Portkey first, because that is what the course hands out. Falling back
+    to a raw OpenAI key keeps the app usable by anyone who clones it.
+    The value is returned, never printed or logged.
+    """
+    _load_env()
+    key = os.environ.get("PORTKEY_API_KEY", "").strip()
+    if key:
+        return "portkey", key
+    key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if key:
+        return "openai", key
+    return "", ""
 
 
 def build_agent(*, web_search: bool = WEB_SEARCH_DEFAULT):
@@ -76,24 +116,38 @@ def build_agent(*, web_search: bool = WEB_SEARCH_DEFAULT):
     from pydantic_ai.models.openai import OpenAIResponsesModel
     from pydantic_ai.providers.openai import OpenAIProvider
 
-    _load_env()
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if not api_key:
+    kind, api_key = credential()
+    if not kind:
         raise RuntimeError(
-            "OPENAI_API_KEY is not set. Copy .env.example to .env and fill it in. "
-            "The key is read from the environment and never logged."
+            "No model credential. Set PORTKEY_API_KEY (the MGT 409 gateway "
+            "key) or OPENAI_API_KEY in .env. Either is read from the "
+            "environment and never logged."
         )
 
-    provider_kwargs: dict[str, Any] = {"api_key": api_key}
-    base_url = os.environ.get("OPENAI_BASE_URL", "").strip()
-    if base_url:
-        provider_kwargs["base_url"] = base_url
+    if kind == "portkey":
+        # The gateway speaks the OpenAI API, so the only differences are the
+        # base URL and the provider header. It rejects the class virtual key,
+        # so that is deliberately not sent.
+        from openai import AsyncOpenAI
+
+        client = AsyncOpenAI(
+            api_key=api_key,
+            base_url=PORTKEY_BASE_URL,
+            default_headers={"x-portkey-provider": "openai"},
+        )
+        provider = OpenAIProvider(openai_client=client)
+    else:
+        provider_kwargs: dict[str, Any] = {"api_key": api_key}
+        base_url = os.environ.get("OPENAI_BASE_URL", "").strip()
+        if base_url:
+            provider_kwargs["base_url"] = base_url
+        provider = OpenAIProvider(**provider_kwargs)
 
     # OpenAIResponsesModel, not OpenAIChatModel: the chat model rejects
     # WebSearch with "WebSearchTool is not supported with OpenAIChatModel".
     model = OpenAIResponsesModel(
         os.environ.get("YALENDAR_MODEL", DEFAULT_MODEL),
-        provider=OpenAIProvider(**provider_kwargs),
+        provider=provider,
     )
 
     # Native tools are capabilities in pydantic-ai 2.x. There is no
@@ -167,10 +221,19 @@ def _stop_reason(messages: list) -> str:
 
 
 def _usage(result) -> dict:
-    """Real token counts for the run, so cost is measured and not guessed."""
-    try:
-        usage = result.usage()
-    except Exception:  # pragma: no cover - usage is advisory, never fatal
+    """Real token counts for the run, so cost is measured and not guessed.
+
+    `usage` is a property on pydantic-ai 2.48 and was a method on earlier
+    releases. Calling it unconditionally raised TypeError straight into a
+    bare `except`, so every run recorded {} -- the audit trail looked fine
+    and every dollar-denominated cap was quietly billing zero. Accept both
+    shapes, and let a genuinely unexpected failure be visible rather than
+    swallowed into an empty dict.
+    """
+    usage = getattr(result, "usage", None)
+    if callable(usage):
+        usage = usage()
+    if usage is None:
         return {}
     get = lambda name: getattr(usage, name, None)  # noqa: E731
     return {

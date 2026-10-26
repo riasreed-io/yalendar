@@ -11,12 +11,16 @@ primary_region = "ewr"
   # The shared build serves the committed public-only snapshot: no live
   # fetching, no writes, no Yale session. See yale_today/config.py.
   YALENDAR_MODE = "demo"
-  # Let visitors use the AI assistant. Safe only because agent/budget.py
-  # caps the whole deployment per day, not just each question.
+  # Visitors may use the AI assistant, but the total bill for doing so is
+  # bounded at one dollar for the life of the deployment -- not per day,
+  # which would be a recurring charge. At gpt-6-luna rates that is roughly
+  # 2,300 questions; the per-day question cap binds long before the money
+  # does. See yale_today/agent/budget.py.
   YALENDAR_PUBLIC_AGENT = "1"
-  YALENDAR_MAX_QUESTIONS_PER_DAY = "200"
-  YALENDAR_MAX_COST_PER_DAY = "2.00"
-  YALENDAR_MAX_QUESTIONS_PER_HOUR = "15"
+  YALENDAR_MAX_COST_TOTAL = "1.00"
+  YALENDAR_MAX_QUESTIONS_PER_DAY = "60"
+  YALENDAR_MAX_COST_PER_DAY = "0.10"
+  YALENDAR_MAX_QUESTIONS_PER_HOUR = "5"
 
 [http_service]
   internal_port = 8000
