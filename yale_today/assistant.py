@@ -314,6 +314,22 @@ def parse(text: str, *, today: date | None = None) -> Query:
     claimed |= {w for phrase in FOOD_WORDS for w in phrase.split()}
     claimed |= {"today", "tomorrow", "tmrw", "weekend", "week", "month",
                 "next", "days", "day", "after", "before"}
+
+    # Once a filter has fired, the generic noun that named it is not a search
+    # term. "law school next week" matched the Law School and then also
+    # required the word "school" to appear in the listing, which almost
+    # nothing does -- the query returned 0 events while "events at the law
+    # school" returned 1.
+    if depts:
+        claimed |= {"school", "schools", "department", "departments", "dept",
+                    "faculty", "program", "programme"}
+    if channels:
+        claimed |= {"calendar", "calendars", "feed", "feeds", "listing",
+                    "listings"}
+    if cats:
+        claimed |= {"category", "categories", "topic", "topics", "kind",
+                    "type", "types"}
+
     claimed -= SPECIFIC
     keywords = [
         t for t in tokens

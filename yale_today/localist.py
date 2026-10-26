@@ -89,7 +89,7 @@ def _events_from_rows(rows: list, source: str = "localist",
                     url=_text(raw.get("localist_url") or raw.get("url")),
                     host=_host(raw) or default_host,
                     tags=_tags(raw),
-                    fingerprint=fingerprint(title, start, loc),
+                    fingerprint=fingerprint(title, start),
                     extra={"experience": raw.get("experience"), "status": raw.get("status")},
                 )
             )

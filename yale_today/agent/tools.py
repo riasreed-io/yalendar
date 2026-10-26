@@ -15,26 +15,48 @@ from ..config import now_local, today_local
 from ..db import connect
 from ..dedupe import events_for_range
 from ..facets import CHANNEL_LABELS, DEPARTMENTS, enrich
+from .guard import scrub
 from .models import DataHorizon, EventSearchResult, EventSummary
 
 TOOL_RESULT_LIMIT = 12
 
 
-def _to_summary(event: dict, today: date) -> EventSummary:
-    return EventSummary(
-        title=event.get("title") or "Untitled event",
-        start=event.get("start") or "",
-        when=event.get("when_label") or _when_label(event, today=today),
-        all_day=bool(event.get("all_day")),
-        location=event.get("location") or "",
-        organization=event.get("org") or "",
-        url=event.get("url") or "",
-        source=event.get("source") or "",
-        channel=event.get("channel") or "",
-        channel_label=event.get("channel_label") or "",
-        category=event.get("category") or "",
-        department=event.get("dept_label") or "",
+def _to_summary(event: dict, today: date) -> tuple[EventSummary, bool]:
+    """Flatten one row for the agent, scrubbing the fields a stranger wrote.
+
+    title, organization and location come straight off a calendar anyone can
+    post to, so they are untrusted input and go through guard.scrub. The
+    other fields are ours: slugs we assign, or timestamps we parsed.
+    """
+    title, f1 = scrub(event.get("title") or "")
+    org, f2 = scrub(event.get("org") or "")
+    where, f3 = scrub(event.get("location") or "")
+    return (
+        EventSummary(
+            title=title or "Untitled event",
+            start=event.get("start") or "",
+            when=event.get("when_label") or _when_label(event, today=today),
+            all_day=bool(event.get("all_day")),
+            location=where,
+            organization=org,
+            url=event.get("url") or "",
+            source=event.get("source") or "",
+            channel=event.get("channel") or "",
+            channel_label=event.get("channel_label") or "",
+            category=event.get("category") or "",
+            department=event.get("dept_label") or "",
+        ),
+        f1 or f2 or f3,
     )
+
+
+def _summarise(rows: list[dict], today: date) -> tuple[list[EventSummary], int]:
+    out, flagged = [], 0
+    for row in rows:
+        summary, hit = _to_summary(row, today)
+        out.append(summary)
+        flagged += 1 if hit else 0
+    return out, flagged
 
 
 def search_events(
@@ -92,13 +114,15 @@ def search_events(
 
     matched.sort(key=lambda e: (bool(e.get("all_day")), e.get("start") or ""))
     capped = max(1, min(int(limit or TOOL_RESULT_LIMIT), 40))
+    events, flagged = _summarise(matched[:capped], today)
     return EventSearchResult(
-        events=[_to_summary(e, today) for e in matched[:capped]],
+        events=events,
         total=len(matched),
         returned=min(len(matched), capped),
         truncated=len(matched) > capped,
         window_start=start_date,
         window_end=end_date,
+        flagged=flagged,
     )
 
 
@@ -111,14 +135,16 @@ def search_events_in_words(question: str) -> EventSearchResult:
     """
     result = natural_answer(question)
     today = today_local()
+    events, flagged = _summarise(result.events, today)
     return EventSearchResult(
-        events=[_to_summary(e, today) for e in result.events],
+        events=events,
         total=len(result.events) + result.more,
         returned=len(result.events),
         truncated=result.more > 0,
         window_start=result.query.start.isoformat(),
         window_end=result.query.end.isoformat(),
         note=result.reply,
+        flagged=flagged,
     )
 
 

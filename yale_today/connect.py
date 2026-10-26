@@ -112,7 +112,7 @@ def events_from_rows(
                 url=url,
                 host=unescape(mapped.get("clubName") or "").strip(),
                 tags=_tags(mapped.get("eventTags") or mapped.get("eventCategory") or ""),
-                fingerprint=fingerprint(title, start, loc),
+                fingerprint=fingerprint(title, start),
                 extra={"club_id": mapped.get("clubId"), "uid": mapped.get("eventUid"), "origin": origin},
             )
         )

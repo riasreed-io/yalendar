@@ -14,7 +14,7 @@ def apply_dedupe(path=None) -> int:
     ).fetchall()
     buckets: dict[str, list] = defaultdict(list)
     for row in rows:
-        key = fingerprint(row["title"], row["start"][:16] if row["start"] else "", row["location"] or "")
+        key = fingerprint(row["title"], row["start"][:16] if row["start"] else "")
         buckets[key].append(row)
 
     updated = 0

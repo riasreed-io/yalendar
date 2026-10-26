@@ -5,7 +5,7 @@ import sqlite3
 from pathlib import Path
 
 from .config import DB_PATH
-from .models import Event
+from .models import FINGERPRINT_VERSION, Event, fingerprint
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS events (
@@ -66,7 +66,45 @@ CREATE TABLE IF NOT EXISTS visitors (
     email TEXT PRIMARY KEY,
     last_seen TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Small key/value store for migration bookkeeping.
+CREATE TABLE IF NOT EXISTS meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
+
+
+def _migrate_fingerprints(db: sqlite3.Connection) -> int:
+    """Recompute stored fingerprints after the hash definition changes.
+
+    The column is written once at ingest, so a change to fingerprint() would
+    otherwise leave old rows hashed the old way and new rows the new way, and
+    the two would never match each other -- duplicates would persist until
+    every row happened to be re-ingested.
+    """
+    row = db.execute(
+        "SELECT value FROM meta WHERE key='fingerprint_version'"
+    ).fetchone()
+    if row and int(row[0]) >= FINGERPRINT_VERSION:
+        return 0
+
+    changed = 0
+    with db:
+        for event in db.execute("SELECT id, title, start, fingerprint FROM events").fetchall():
+            want = fingerprint(event["title"], (event["start"] or "")[:16])
+            if want != event["fingerprint"]:
+                db.execute(
+                    "UPDATE events SET fingerprint=?, canonical_id=NULL WHERE id=?",
+                    (want, event["id"]),
+                )
+                changed += 1
+        db.execute(
+            "INSERT INTO meta (key, value) VALUES ('fingerprint_version', ?) "
+            "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+            (str(FINGERPRINT_VERSION),),
+        )
+    return changed
 
 
 def connect(path: Path | None = None) -> sqlite3.Connection:
@@ -74,6 +112,11 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
     db.row_factory = sqlite3.Row
     db.execute("PRAGMA journal_mode=WAL")
     db.executescript(SCHEMA)
+    if _migrate_fingerprints(db):
+        # Canonical links were cleared above; rebuild them under the new key.
+        from .dedupe import apply_dedupe
+
+        apply_dedupe(path)
     return db
 
 

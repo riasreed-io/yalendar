@@ -56,7 +56,7 @@ def _from_vevent(component: ICalEvent, source: str) -> Event | None:
         url=url,
         host=source.replace("_", " ").title(),
         tags="",
-        fingerprint=fingerprint(title, start_iso, loc),
+        fingerprint=fingerprint(title, start_iso),
     )
 
 

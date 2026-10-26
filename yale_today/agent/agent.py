@@ -23,7 +23,21 @@ PROMPT_PATH = ROOT / "prompts" / "prompt.md"
 AUDIT_PATH = ROOT / "output" / "audit_trail.json"
 RESULT_PREVIEW_CHARS = 400
 
-DEFAULT_MODEL = "gpt-5"
+DEFAULT_MODEL = "gpt-5-mini"
+
+# Ceilings for a single question. A campus-events answer is one or two tool
+# calls and a short paragraph; anything beyond this is a loop or an attack,
+# and without a ceiling either one bills until someone notices.
+MAX_REQUESTS = 6          # model round-trips
+MAX_TOOL_CALLS = 6
+MAX_TOTAL_TOKENS = 40_000
+MAX_COST_USD = "0.25"     # hard stop per question, whatever the model costs
+
+# The native web_search tool is billed per call on top of tokens ($10 per
+# 1,000 calls at current pricing, i.e. about as much as the rest of the run).
+# Every event Yalendar can answer about is already in the local database, so
+# it is off unless someone deliberately asks for it.
+WEB_SEARCH_DEFAULT = os.environ.get("YALENDAR_WEB_SEARCH") == "1"
 
 
 def _load_env() -> None:
@@ -41,7 +55,21 @@ def load_prompt() -> str:
     return PROMPT_PATH.read_text(encoding="utf-8").strip()
 
 
-def build_agent(*, web_search: bool = True):
+def usage_limits():
+    """Per-question ceilings on requests, tool calls, tokens and spend."""
+    from decimal import Decimal
+
+    from pydantic_ai.usage import UsageLimits
+
+    return UsageLimits(
+        request_limit=MAX_REQUESTS,
+        tool_calls_limit=MAX_TOOL_CALLS,
+        total_tokens_limit=MAX_TOTAL_TOKENS,
+        cost_limit=Decimal(MAX_COST_USD),
+    )
+
+
+def build_agent(*, web_search: bool = WEB_SEARCH_DEFAULT):
     """Construct the Agent. Requires an API key; raises a clear error without one."""
     from pydantic_ai import Agent
     from pydantic_ai.capabilities import WebSearch
@@ -138,6 +166,28 @@ def _stop_reason(messages: list) -> str:
     return "unknown"
 
 
+def _usage(result) -> dict:
+    """Real token counts for the run, so cost is measured and not guessed."""
+    try:
+        usage = result.usage()
+    except Exception:  # pragma: no cover - usage is advisory, never fatal
+        return {}
+    get = lambda name: getattr(usage, name, None)  # noqa: E731
+    return {
+        k: v
+        for k, v in {
+            "requests": get("requests"),
+            "input_tokens": get("input_tokens"),
+            "cache_read_tokens": get("cache_read_tokens"),
+            "cache_write_tokens": get("cache_write_tokens"),
+            "output_tokens": get("output_tokens"),
+            "tool_calls": get("tool_calls"),
+            "total_tokens": get("total_tokens"),
+        }.items()
+        if v is not None
+    }
+
+
 def append_audit(entry: dict) -> None:
     """Append one run to output/audit_trail.json. Never overwrites history."""
     AUDIT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -157,7 +207,7 @@ def append_audit(entry: dict) -> None:
     AUDIT_PATH.write_text(json.dumps(existing, indent=2, default=str), encoding="utf-8")
 
 
-def run_agent(message: str, *, web_search: bool = True) -> dict:
+def run_agent(message: str, *, web_search: bool = WEB_SEARCH_DEFAULT) -> dict:
     """Run one message and return {"reply", "tools_used"}.
 
     Every run is appended to output/audit_trail.json with the tool calls,
@@ -165,14 +215,19 @@ def run_agent(message: str, *, web_search: bool = True) -> dict:
     """
     started = datetime.now(timezone.utc)
     agent = build_agent(web_search=web_search)
-    result = agent.run_sync(message)
+    result = agent.run_sync(message, usage_limits=usage_limits())
     messages = result.all_messages()
     calls = _collect_tool_calls(messages)
+    elapsed = (datetime.now(timezone.utc) - started).total_seconds()
 
     append_audit(
         {
             "time": started.isoformat(),
             "message": message,
+            "model": os.environ.get("YALENDAR_MODEL", DEFAULT_MODEL),
+            "web_search": web_search,
+            "seconds": round(elapsed, 2),
+            "usage": _usage(result),
             "tool_calls": [call.model_dump() for call in calls],
             "stop_reason": _stop_reason(messages),
         }

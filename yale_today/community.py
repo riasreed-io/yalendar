@@ -63,7 +63,7 @@ def fetch_nhfpl(months: int = 2) -> list[Event]:
                         url=row.get("url") or f"https://nhfpl.libcal.com/event/{eid}",
                         host="New Haven Free Public Library",
                         tags=row.get("categories") or "community",
-                        fingerprint=fingerprint(title, start_iso, str(loc)),
+                        fingerprint=fingerprint(title, start_iso),
                     )
                 )
     return events
@@ -105,7 +105,7 @@ def fetch_unh(days: int = 14) -> list[Event]:
                             url=raw.get("localist_url") or raw.get("url") or "",
                             host="University of New Haven",
                             tags="community, university",
-                            fingerprint=fingerprint(title, start, loc),
+                            fingerprint=fingerprint(title, start),
                         )
                     )
             info = payload.get("page") or {}
