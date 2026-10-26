@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}Yalendar{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css?v=glass1">
+  <link rel="stylesheet" href="/static/style.css?v=glass3">
 </head>
 <body>
   <header class="top">
@@ -19,9 +19,20 @@
       <a href="/calendar">Month</a>
       <a href="/ask">Ask</a>
       <a href="/sources">Sources</a>
-      <a href="/settings">Feeds</a>
+      <a href="/connect">Connect</a>
     </nav>
   </header>
+  {% if is_demo %}
+  <div class="demo-banner" role="status">
+    <strong>Demo snapshot.</strong>
+    A frozen, public-only copy of Yale's calendars taken on
+    {{ demo_meta.as_of[:10] }} — the clock is pinned to that day so every view is
+    populated. No sign-in, no live fetching, and nothing private from anyone's
+    account. {{ "{:,}".format(demo_meta.events or 0) }} events from
+    {{ demo_meta.sources | length }} sources.
+    <a href="/sources">What's in it</a>
+  </div>
+  {% endif %}
   <main>
     {% block content %}{% endblock %}
   </main>

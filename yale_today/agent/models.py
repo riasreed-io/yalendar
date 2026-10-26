@@ -70,3 +70,11 @@ class AgentReply(BaseModel):
 
     reply: str
     tools_used: list[str] = Field(default_factory=list)
+    usage: dict = Field(
+        default_factory=dict,
+        description=(
+            "Measured token counts for the run. Returned, not just logged, "
+            "so the caller can bill the run against the deployment's daily "
+            "ceiling without re-reading the audit file."
+        ),
+    )

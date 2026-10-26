@@ -8,6 +8,15 @@ primary_region = "ewr"
   PORT = "8000"
   YALE_TODAY_DATA = "/app/data"
   YALE_TODAY_HTTPS = "1"
+  # The shared build serves the committed public-only snapshot: no live
+  # fetching, no writes, no Yale session. See yale_today/config.py.
+  YALENDAR_MODE = "demo"
+  # Let visitors use the AI assistant. Safe only because agent/budget.py
+  # caps the whole deployment per day, not just each question.
+  YALENDAR_PUBLIC_AGENT = "1"
+  YALENDAR_MAX_QUESTIONS_PER_DAY = "200"
+  YALENDAR_MAX_COST_PER_DAY = "2.00"
+  YALENDAR_MAX_QUESTIONS_PER_HOUR = "15"
 
 [http_service]
   internal_port = 8000

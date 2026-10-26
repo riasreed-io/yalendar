@@ -334,10 +334,13 @@ def _agent_allowed(request: Request) -> bool:
 
 @router.get("/agent/status")
 def agent_status(request: Request) -> dict:
+    from .agent import budget
+
     return {
         "allowed": _agent_allowed(request),
         "configured": bool(os.environ.get("OPENAI_API_KEY", "").strip()),
         "public": os.environ.get("YALENDAR_PUBLIC_AGENT") == "1",
+        "budget": budget.status(),
     }
 
 
@@ -352,13 +355,28 @@ def agent_ask(request: Request, payload: dict = Body(default={})) -> dict:
         local["note"] = "The AI assistant is limited to the site owner; this is the free search."
         return local
 
+    # Second ceiling, after the per-question one in agent.py: a caller that
+    # stays inside every single-run limit can still run up a bill by asking
+    # ten thousand times. Over the line, the question is still answered --
+    # by the free local search, which costs nothing.
+    from .agent import budget
+
+    caller = (request.client.host if request.client else "") or ""
+    allowance = budget.check(caller)
+    if not allowance.ok:
+        local = _ask_local(question)
+        local["note"] = f"AI answers are paused: {allowance.reason}. This is the free search."
+        local["budget_blocked"] = True
+        return local
+
     from .agent.agent import run_agent
 
     try:
         result = run_agent(question)
-        result["engine"] = "agent"
-        return result
     except RuntimeError as exc:
         local = _ask_local(question)
         local["note"] = str(exc)
         return local
+    result["cost_usd"] = round(budget.record(caller, result.get("usage") or {}), 5)
+    result["engine"] = "agent"
+    return result

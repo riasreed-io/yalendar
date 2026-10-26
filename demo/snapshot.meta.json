@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "as_of": "2026-10-26T12:12:48-04:00",
+  "built_at": "2026-10-26T12:12:48-04:00",
+  "events": 2802,
+  "sources": [
+    "athletics",
+    "campus_groups",
+    "localist",
+    "localist_jackson",
+    "localist_som",
+    "nhfpl",
+    "res_college",
+    "unh",
+    "yale_connect"
+  ],
+  "first_date": "2026-10-26",
+  "last_date": "2026-12-09",
+  "note": "Public Yale and New Haven sources only, 45 days from the snapshot date. No signed-in data, no personal calendars."
+}

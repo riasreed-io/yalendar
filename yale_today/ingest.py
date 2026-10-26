@@ -7,7 +7,7 @@ from calendar import monthrange
 from datetime import date, timedelta
 
 from . import community, connect, db, dedupe, ics_feeds, localist
-from .config import CONNECT_FEEDS_PATH, today_local
+from .config import CONNECT_FEEDS_PATH, mode, network_allowed, signin_allowed, today_local
 
 
 @dataclass
@@ -76,6 +76,19 @@ def run_ingest(
     days: int | None = None,
     start_day: str | None = None,
 ) -> IngestReport:
+    if not network_allowed():
+        raise RuntimeError(
+            f"Ingest is disabled in {mode()} mode: this build serves the frozen "
+            "demo snapshot. Rebuild it with scripts/make_demo.py instead."
+        )
+    if include_connect_login and not signin_allowed():
+        # Quietly dropping the flag would be worse than failing: the run
+        # would look successful while silently omitting the signed-in half.
+        raise RuntimeError(
+            f"Signed-in ingest is disabled in {mode()} mode. Public sources "
+            "only; run on your own machine to include Yale Connect and "
+            "Campus Groups."
+        )
     report = IngestReport(errors=[])
     collected = []
     month = month or ""

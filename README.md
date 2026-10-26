@@ -6,6 +6,62 @@ Athletics, and New Haven community calendars into day, week, and month views.
 
 Not an official Yale product. The internal package is still named `yale_today`.
 
+## Three builds, one codebase
+
+Yalendar began as one person's local tool: one SQLite file, one saved Yale
+sign-in. Sharing it meant naming that assumption instead of relying on it, so
+`YALENDAR_MODE` selects which build is running and every path that touches the
+network, the disk or a credential checks it (`yale_today/config.py`).
+
+| mode | database | fetches | writes | can sign in | who it is for |
+|---|---|---|---|---|---|
+| `personal` *(default)* | `data/events.db` | yes | yes | yes | you, on your own machine |
+| `demo` | rebuilt from `demo/snapshot.json.gz` | no | no | no | strangers, graders, the public link |
+| `public` | `data/events.db` | yes | yes | **no** | a live deployment of the public sources |
+
+```bash
+python -m yale_today mode     # what this build is and what it may do
+```
+
+### The demo build
+
+```bash
+YALENDAR_MODE=demo python -m yale_today serve
+```
+
+Serves `demo/snapshot.json.gz` — 2,800+ events across 9 sources, committed to the
+repo. No Yale account, no API key, no network. Two things make it usable rather
+than merely safe:
+
+- **The clock is pinned to the snapshot date.** A frozen calendar against a
+  moving clock empties out within a week and looks broken. Every view stays
+  populated, and a banner on every page says which day you are looking at.
+- **It is public by construction, not by filtering.** `scripts/make_demo.py
+  --rebuild` ingests into a throwaway directory with `YALENDAR_MODE=public`,
+  which disables every signed-in source *in code*. Nothing private can enter it,
+  and `demo.export()` refuses outright to snapshot a database holding
+  authenticated pulls.
+
+```bash
+python scripts/make_demo.py --rebuild    # refresh it (a few minutes)
+python scripts/make_demo.py --inspect    # what is in the current one
+```
+
+### Someone else using it with their own account
+
+```bash
+python -m yale_today setup
+```
+
+Pulls the public calendars first — that alone is most of the app and needs no
+account — then *offers* the Yale sign-in. See "Access" below for what that
+sign-in does and does not do. Personal iCal feeds go in on the `/connect` page.
+
+Multi-tenant hosting (several people's private events on one server) is **not**
+implemented and is not planned: it would mean storing other people's Yale
+sessions on a machine I control. The supported answers are the demo build, a
+public-sources deployment, or running your own copy.
+
 ## Access
 
 The site is open — no login, no invite code. Anyone with the URL can view it.
@@ -19,6 +75,21 @@ in the app, the database, or the repo.
 
 `/login`, `/friends`, and the `Bulldog` invite code are leftovers from an earlier
 invite-only version. Nothing routes to them while access is open.
+
+### What signing in actually does
+
+There is no credential field anywhere in this app, in any mode. `python -m
+yale_today login` (or the button on `/connect`) opens a real Chrome window on
+*your* machine pointed at Yale's own CAS page; you type there, Duo goes to your
+phone, and the only thing kept is a session cookie in `data/session_state.json`
+on your disk. Yalendar never reads, types or transmits a NetID.
+
+Signing in buys two things: Yale Connect and SOM Campus Groups blank the venue
+for logged-out visitors ("Sign in to download the location"), and they hide
+club events restricted to members.
+
+The `demo` and `public` builds **refuse** to sign in — `session_login` raises
+rather than trusting that nobody will run the command.
 
 ## Local
 
@@ -56,17 +127,22 @@ restart, so old links return error 1033:
 .tools/cloudflared tunnel --url http://127.0.0.1:8002 --no-autoupdate
 ```
 
-The stable-host goal is `yalendar.fly.dev` (see `fly.toml`). Not yet deployed — it needs
-`fly auth login` first:
+The stable-host goal is `yalendar.fly.dev` (see `fly.toml`), configured to deploy
+the **demo** build. Not yet deployed — it needs the CLI and a login first:
 
 ```bash
+brew install flyctl
 fly auth login
-fly secrets set SESSION_SECRET='long-random-string' YALE_TODAY_HTTPS=1
+fly secrets set SESSION_SECRET='long-random-string' OPENAI_API_KEY='sk-...'
 fly deploy
 ```
 
-Do not upload the NetID PDF. After a scrape on the laptop, copy `data/events.db` to the
-host or redeploy with the updated database.
+`data/` is excluded from the image wholesale, not file by file. It holds the
+saved Yale session *and* `events.db`, which contains members-only club events
+that are in it only because somebody signed in. The image gets
+`demo/snapshot.json.gz` and rebuilds its database from that at startup, so
+there is nothing private for it to serve and nothing stale to leave on a volume.
+Never upload the NetID PDF.
 
 ## Agent + React frontend
 
@@ -97,6 +173,20 @@ without starting anything:
 .venv/bin/python -c "import yale_today.web, yale_today.agent.agent"
 cd frontend && npx tsc -b && npx oxlint
 ```
+
+### Two spend ceilings, not one
+
+`agent/agent.py` caps a single question at 6 requests, 6 tool calls, 40k tokens
+and $0.25. That stops a runaway loop inside one run and does nothing about ten
+thousand runs. `agent/budget.py` is the second ceiling: every answered question
+is logged to `data/agent_usage.db` with its measured cost, and three limits are
+checked before the model is built — questions per day, dollars per day, and
+questions per hour from one caller. Over the line the question is still
+answered, by the free local search; a budget cap that returns an error page is
+an outage.
+
+Honest limitation: the counter is per machine, so several machines get that
+multiple of the ceiling and a restart begins the day's count again.
 
 ### The agent is off for visitors by default
 

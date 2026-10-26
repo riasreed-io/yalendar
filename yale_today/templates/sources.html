@@ -10,9 +10,11 @@
         {{ total }} events stored &middot; checked {{ today }}
       </p>
     </div>
+    {% if can_write %}
     <form method="post" action="/refresh?next=sources">
       <button class="ghost" type="submit">Refresh now</button>
     </form>
+    {% endif %}
   </div>
 
   <p class="chip-hint">

@@ -8,6 +8,7 @@ from pathlib import Path
 from .config import CONNECT_FEEDS_PATH, CONNECT_STATUS_PATH, DEFAULT_NETID_PDF
 from .connect import CONNECT_LIST, SOM_LIST, SOM_ORIGIN, events_from_rows
 from .credentials import CredentialError, load_netid_credentials
+from .session_login import _require_personal_mode
 
 PLATFORMS = [
     {
@@ -124,6 +125,7 @@ def login_and_capture_ics(
     days: int = 0,
 ) -> dict:
     """Sign into Yale Connect and SOM Campus Groups. Never writes NetID/password."""
+    _require_personal_mode()
     try:
         from playwright.sync_api import sync_playwright
     except ImportError as exc:

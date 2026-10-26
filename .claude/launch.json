@@ -4,6 +4,10 @@
     {"name": "yalendar",
      "runtimeExecutable": "/bin/sh",
      "runtimeArgs": ["-c", "cd /Users/rias/Projects/yale-today && exec .venv/bin/python -m yale_today serve --host 127.0.0.1 --port 8004"],
-     "port": 8004}
+     "port": 8004},
+    {"name": "yalendar-demo",
+     "runtimeExecutable": "/bin/sh",
+     "runtimeArgs": ["-c", "cd /Users/rias/Projects/yale-today && YALENDAR_MODE=demo YALE_TODAY_DATA=/tmp/yalendar-demo-data exec .venv/bin/python -m yale_today serve --host 127.0.0.1 --port 8005"],
+     "port": 8005}
   ]
 }

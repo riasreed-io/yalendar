@@ -6,17 +6,22 @@
 # data/browser_profile/, which hold a live authenticated Yale CAS/Duo
 # session. A deploy would have published them.
 
-# --- credentials and sessions: never, under any circumstances -------------
+# --- the whole personal data directory ------------------------------------
+# Excluded wholesale rather than file by file. It holds the saved Yale
+# session, the browser profile, the dashboard password, AND events.db --
+# which contains members-only club events that are only visible because
+# somebody signed in. The image gets demo/snapshot.json.gz instead, which
+# is built from a public-only ingest.
+data/
+
+# --- credentials, wherever else they turn up ------------------------------
 .env
 .env.*
 !.env.example
-data/session_state.json
-data/browser_profile/
-data/dashboard_password.txt
-data/connect_feeds.json
-data/connect_login_status.json
 *.pem
 *.key
+# The NetID PDF, if it is ever copied into the tree by mistake.
+*.pdf
 
 # --- local tooling --------------------------------------------------------
 .venv
@@ -25,6 +30,7 @@ data/connect_login_status.json
 .gitignore
 .github
 .claude
+.agents
 .pytest_cache
 __pycache__
 *.pyc
@@ -32,8 +38,6 @@ __pycache__
 .DS_Store
 
 # --- build output and scratch --------------------------------------------
-data/*.db-shm
-data/*.db-wal
 output/
 frontend/node_modules
 frontend/dist

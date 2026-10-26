@@ -219,6 +219,7 @@ def run_agent(message: str, *, web_search: bool = WEB_SEARCH_DEFAULT) -> dict:
     messages = result.all_messages()
     calls = _collect_tool_calls(messages)
     elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+    usage = _usage(result)
 
     append_audit(
         {
@@ -227,7 +228,7 @@ def run_agent(message: str, *, web_search: bool = WEB_SEARCH_DEFAULT) -> dict:
             "model": os.environ.get("YALENDAR_MODEL", DEFAULT_MODEL),
             "web_search": web_search,
             "seconds": round(elapsed, 2),
-            "usage": _usage(result),
+            "usage": usage,
             "tool_calls": [call.model_dump() for call in calls],
             "stop_reason": _stop_reason(messages),
         }
@@ -236,5 +237,6 @@ def run_agent(message: str, *, web_search: bool = WEB_SEARCH_DEFAULT) -> dict:
     reply = AgentReply(
         reply=result.output,
         tools_used=list(dict.fromkeys(call.name for call in calls)),
+        usage=usage,
     )
     return reply.model_dump()

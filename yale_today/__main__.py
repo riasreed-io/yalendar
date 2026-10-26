@@ -25,6 +25,17 @@ def main(argv: list[str] | None = None) -> None:
     )
     ingest_p.add_argument("--headed", action="store_true", help="Show the browser during Connect login (needed for Duo)")
 
+    setup_p = sub.add_parser(
+        "setup",
+        help="First run: pull the public calendars, then optionally sign in",
+    )
+    setup_p.add_argument("--days", type=int, default=45,
+                         help="How many days ahead to pull (default 45)")
+    setup_p.add_argument("--yes", action="store_true",
+                         help="Take the defaults; never prompt")
+
+    sub.add_parser("mode", help="Show which build this is and what it may do")
+
     sub.add_parser(
         "login",
         help="Sign into Yale Connect and Campus Groups once; the session is saved for later runs",
@@ -39,6 +50,33 @@ def main(argv: list[str] | None = None) -> None:
     serve_p.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8000")))
 
     args = parser.parse_args(argv)
+
+    if args.cmd == "setup":
+        import sys
+
+        from .setup_wizard import run as run_setup
+
+        raise SystemExit(run_setup(
+            interactive=not args.yes and sys.stdin.isatty(), days=args.days))
+
+    if args.cmd == "mode":
+        from .config import (
+            DATA_DIR, DB_PATH, MODE, network_allowed, personal_files_present,
+            signin_allowed, today_local, writes_allowed,
+        )
+
+        print(f"mode            {MODE}")
+        print(f"data folder     {DATA_DIR}")
+        print(f"database        {DB_PATH}")
+        print(f"'today' is      {today_local()}")
+        print(f"may fetch       {network_allowed()}")
+        print(f"may write       {writes_allowed()}")
+        print(f"may sign in     {signin_allowed()}")
+        stray = personal_files_present()
+        if stray and MODE != "personal":
+            print("WARNING         a Yale session is visible to this build: "
+                  + ", ".join(p.name for p in stray))
+        return
 
     if args.cmd in {"login", "login-check", "harvest"}:
         from . import session_login

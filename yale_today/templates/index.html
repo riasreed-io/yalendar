@@ -25,9 +25,11 @@
           event{% if total != 1 %}s{% endif %}
         </p>
       </div>
+      {% if can_write %}
       <form method="post" action="/refresh?day={{ day }}&next=day">
         <button class="ghost" type="submit">Refresh one month</button>
       </form>
+      {% endif %}
     </div>
 
     {% if notice == 'refreshed' %}

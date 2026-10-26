@@ -20,8 +20,24 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .config import CONNECT_STATUS_PATH, DATA_DIR
+from .config import CONNECT_STATUS_PATH, DATA_DIR, mode, signin_allowed
 from .connect import CONNECT_LIST, CONNECT_ORIGIN, SOM_LIST, SOM_ORIGIN, events_from_rows
+
+def _require_personal_mode() -> None:
+    """Signing in is a personal-machine operation, always.
+
+    The demo and public builds are shared with people who are not me. A
+    saved Yale session on either of them would let every visitor browse
+    campus as its owner, so the code refuses rather than relying on nobody
+    thinking to run the command.
+    """
+    if not signin_allowed():
+        raise RuntimeError(
+            f"Signing in is disabled in {mode()} mode. A saved Yale session "
+            "belongs on one person's own machine and nowhere else. Run this "
+            "with YALENDAR_MODE unset (or =personal)."
+        )
+
 
 PROFILE_DIR = DATA_DIR / "browser_profile"
 # The login cookie is a *session* cookie, which Chrome discards when the
@@ -151,6 +167,7 @@ def _probe(page, platform: Platform) -> PlatformCheck:
 
 def check_session(headed: bool = False) -> SessionReport:
     """Verify the saved sign-in still works, in a fresh browser."""
+    _require_personal_mode()
     from playwright.sync_api import sync_playwright
 
     report = SessionReport(profile=str(STATE_PATH))
@@ -180,6 +197,7 @@ def interactive_login(wait_seconds: int = 900, poll_seconds: float = 3.0) -> Ses
     keypress to miss and no countdown to lose. Credentials are never read,
     typed or stored by this code.
     """
+    _require_personal_mode()
     import time
 
     from playwright.sync_api import sync_playwright
@@ -242,6 +260,7 @@ def interactive_login(wait_seconds: int = 900, poll_seconds: float = 3.0) -> Ses
 
 def harvest(start_day: str = "", days: int = 0, month: str = "") -> tuple[list, SessionReport]:
     """Pull events using the saved session. Headless; no Duo if the profile is live."""
+    _require_personal_mode()
     from playwright.sync_api import sync_playwright
 
     from . import db, dedupe

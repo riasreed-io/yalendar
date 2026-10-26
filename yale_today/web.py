@@ -16,7 +16,20 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from . import api, assistant, db, ingest
 from .auth import dashboard_password
-from .config import ROOT, TZINFO, WINDOW_DAYS, SHARED_INVITE, now_local, today_local
+from .config import (
+    MODE,
+    ROOT,
+    SHARED_INVITE,
+    TZINFO,
+    WINDOW_DAYS,
+    demo_meta,
+    is_demo,
+    now_local,
+    personal_files_present,
+    signin_allowed,
+    today_local,
+    writes_allowed,
+)
 from .dedupe import events_for_day, events_for_range
 from .facets import apply_filters, facet_options, filter_by_time, group_events, sort_events
 
@@ -75,7 +88,43 @@ templates.env.filters["when"] = format_when
 templates.env.filters["daylabel"] = format_daylabel
 app.mount("/static", StaticFiles(directory=str(ROOT / "yale_today" / "static")), name="static")
 
-db.ensure_shared_invite()
+def _boot() -> None:
+    """Whatever this build is, make it be only that thing.
+
+    Demo builds rebuild their database from the committed snapshot on every
+    start, so a stale or hand-edited file left on a volume can never be
+    served as the demo. Any build that is not personal shouts if it can see
+    a Yale session -- a wrong .dockerignore line should not be the only
+    thing standing between a sign-in and a public server.
+    """
+    if is_demo():
+        from . import demo
+
+        count = demo.ensure()
+        print(f"[yalendar] demo mode: {count:,} events from "
+              f"{demo_meta().get('as_of', '?')[:10]} snapshot", flush=True)
+    if MODE != "personal":
+        stray = personal_files_present()
+        if stray:
+            print("[yalendar] WARNING: a Yale sign-in is visible to this "
+                  f"{MODE} build: {', '.join(p.name for p in stray)}. "
+                  "Nothing will read it, but it should not be here.",
+                  flush=True)
+    db.ensure_shared_invite()
+
+
+_boot()
+
+
+# Mode is in every template: the banner, the disabled buttons and the
+# Connect page all have to agree about what this build can do.
+templates.env.globals.update(
+    mode=MODE,
+    is_demo=is_demo(),
+    can_write=writes_allowed(),
+    can_sign_in=signin_allowed(),
+    demo_meta=demo_meta(),
+)
 SORTS = [
     ("time", "Time"),
     ("org", "Organization"),
@@ -111,6 +160,8 @@ _last_window_refresh = 0.0
 
 def _refresh_month_window() -> None:
     global _last_window_refresh
+    if not writes_allowed():
+        return
     with _refresh_lock:
         now = time.time()
         if now - _last_window_refresh < 20 * 60:
@@ -517,26 +568,124 @@ def sources_page(request: Request):
     )
 
 
-@app.get("/settings", response_class=HTMLResponse)
-def settings(request: Request):
+# One background sign-in at a time, with its log kept in memory so the
+# page can show what the browser window is doing.
+_connect_state: dict = {"running": False, "lines": [], "finished": ""}
+
+
+def _connect_status() -> dict:
+    """What the saved Yale session currently looks like, from disk."""
+    import json as _json
+
+    from .config import CONNECT_STATUS_PATH, SESSION_STATE_PATH
+
+    saved = SESSION_STATE_PATH.is_file()
+    payload: dict = {}
+    if CONNECT_STATUS_PATH.is_file():
+        try:
+            payload = _json.loads(CONNECT_STATUS_PATH.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            payload = {}
+    platforms = payload.get("platforms") or {}
+    return {
+        "saved_session": saved,
+        "checked": bool(platforms),
+        "platforms": [
+            {"source": k, **v} for k, v in sorted(platforms.items())
+        ],
+        "running": _connect_state["running"],
+        "lines": _connect_state["lines"][-20:],
+        "finished": _connect_state["finished"],
+    }
+
+
+@app.get("/settings")
+def settings_redirect():
+    return RedirectResponse("/connect", status_code=308)
+
+
+@app.get("/connect", response_class=HTMLResponse)
+def connect_page(request: Request):
     if not _logged_in(request):
         return RedirectResponse("/login", status_code=302)
-    urls = "\n".join(row["url"] for row in db.list_feeds())
-    return templates.TemplateResponse(request, "settings.html", {"urls": urls})
+    urls = "\n".join(row["url"] for row in db.list_feeds()) if writes_allowed() else ""
+    host = (request.client.host if request.client else "") or ""
+    return templates.TemplateResponse(
+        request,
+        "connect.html",
+        {
+            "urls": urls,
+            "status": _connect_status(),
+            # Opening a browser window only makes sense for the person
+            # sitting at the machine, so the button needs both a personal
+            # build and a loopback request.
+            "local_request": host in {"127.0.0.1", "::1", "localhost", "testclient"},
+            "sources": EXPECTED_SOURCES,
+        },
+    )
+
+
+@app.post("/connect/start")
+def connect_start(request: Request):
+    """Open Yale's own sign-in page in a real browser on this machine.
+
+    Yalendar never sees a NetID or a password: the window goes to Yale's
+    CAS page, you type into Yale's form, Duo goes to your phone, and the
+    only thing that comes back here is a session cookie written to your own
+    data directory. There is no credential field anywhere in this app, and
+    this route cannot run on a shared build.
+    """
+    host = (request.client.host if request.client else "") or ""
+    if not signin_allowed() or host not in {"127.0.0.1", "::1", "localhost", "testclient"}:
+        return RedirectResponse("/connect?notice=signin-unavailable", status_code=302)
+    if _connect_state["running"]:
+        return RedirectResponse("/connect?notice=signin-running", status_code=302)
+
+    def _run() -> None:
+        _connect_state.update(running=True, lines=["Opening a browser window..."],
+                              finished="")
+        try:
+            from . import session_login
+
+            report = session_login.interactive_login(wait_seconds=600)
+            for check in report.checks:
+                _connect_state["lines"].append(
+                    f"{check.name}: {'signed in' if check.signed_in else 'not signed in'}"
+                    f" ({check.rows} events)")
+            _connect_state["finished"] = "ok" if report.ok else "partial"
+        except Exception as exc:
+            _connect_state["lines"].append(f"{exc.__class__.__name__}: {exc}")
+            _connect_state["finished"] = "error"
+        finally:
+            _connect_state["running"] = False
+
+    threading.Thread(target=_run, daemon=True).start()
+    return RedirectResponse("/connect?notice=signin-started", status_code=302)
+
+
+@app.get("/connect/status")
+def connect_status_api():
+    return _connect_status()
 
 
 @app.post("/settings")
 def settings_save(request: Request, urls: str = Form("")):
     if not _logged_in(request):
         return RedirectResponse("/login", status_code=302)
+    if not writes_allowed():
+        return RedirectResponse("/connect?notice=demo-frozen", status_code=302)
     db.replace_feeds([line.strip() for line in urls.splitlines() if line.strip()])
-    return RedirectResponse("/settings?saved=1", status_code=302)
+    return RedirectResponse("/connect?saved=1", status_code=302)
 
 
 @app.post("/refresh")
 def refresh(request: Request):
     if not _logged_in(request):
         return RedirectResponse("/login", status_code=302)
+    if not writes_allowed():
+        return RedirectResponse(
+            f"/{request.query_params.get('next') or 'calendar'}?notice=demo-frozen",
+            status_code=302)
     month = request.query_params.get("month")
     if not month:
         day = request.query_params.get("day") or today_local().isoformat()

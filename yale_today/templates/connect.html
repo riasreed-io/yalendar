@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Connect · Yalendar{% endblock %}
+{% block content %}
+
+<section class="card">
+  <h1>Connect your calendar</h1>
+  <p class="lede">Most of Yalendar works for anyone, with no account at all.
+  Signing in only adds the events Yale hides from logged-out visitors.</p>
+
+  <h2>Works without signing in</h2>
+  <ul class="source-list">
+    {% for slug, label, origin, kind in sources %}
+      {% if 'signed in' not in kind %}
+      <li><strong>{{ label }}</strong> <span class="muted">{{ origin }}</span></li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  <h2>Needs your own Yale sign-in</h2>
+  <ul class="source-list">
+    {% for slug, label, origin, kind in sources %}
+      {% if 'signed in' in kind %}
+      <li><strong>{{ label }}</strong> <span class="muted">{{ origin }}</span></li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  <p>Signed out, these two still list events but blank the venue — you get
+  <em>“Sign in to download the location”</em> instead of a room. Signing in also
+  reveals club events restricted to members.</p>
+</section>
+
+<section class="card">
+  <h2>How signing in works</h2>
+  <p><strong>Yalendar never asks for your NetID or password, and has no field to type
+  them into.</strong> There is no Yale login form anywhere in this app, and nothing is
+  ever sent to a server of mine.</p>
+  <ol>
+    <li>A real Chrome window opens on <em>your</em> computer, pointed at Yale's own
+      CAS page at <code>secure.its.yale.edu</code>.</li>
+    <li>You type your NetID into Yale's page and approve Duo on your phone, exactly
+      as you would on any other day.</li>
+    <li>Yale hands that window a session cookie. It is saved to
+      <code>data/session_state.json</code> on your own disk, readable only by you,
+      and git and Docker are both told to exclude it.</li>
+  </ol>
+
+  {% if status.saved_session %}
+    <p class="ok-line">A saved session exists on this machine.</p>
+  {% else %}
+    <p class="muted">No saved session on this machine yet.</p>
+  {% endif %}
+
+  {% if status.platforms %}
+  <table class="grid">
+    <thead><tr><th>Platform</th><th>Status</th><th>Events</th><th>Detail</th></tr></thead>
+    <tbody>
+    {% for p in status.platforms %}
+      <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ "signed in" if p.signed_in else "signed out" }}</td>
+        <td>{{ p.rows }}</td>
+        <td class="muted">{{ p.detail }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if can_sign_in and local_request %}
+    <form method="post" action="/connect/start">
+      <button type="submit" {% if status.running %}disabled{% endif %}>
+        {{ "Browser window open…" if status.running else "Open Yale sign-in" }}
+      </button>
+    </form>
+    {% if status.lines %}
+      <pre class="log">{% for line in status.lines %}{{ line }}
+{% endfor %}</pre>
+    {% endif %}
+    <p class="muted">Or from a terminal: <code>python -m yale_today login</code></p>
+  {% else %}
+    <p class="notice">Signing in is only available when you run Yalendar on your own
+    computer. This build is <strong>{{ mode }}</strong> mode, which is shared with
+    other people — a saved Yale session here would let every visitor browse campus
+    as whoever signed in, so the code refuses to do it.</p>
+    <p>To use your own account, clone the repository and run the setup
+    command — it pulls the public calendars first, then offers the sign-in:</p>
+    <pre class="log">python -m yale_today setup</pre>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Personal calendar feeds</h2>
+  <p>Any iCal / ICS subscription URL — a club calendar, your residential college,
+  a Google Calendar you own. These need no sign-in because the URL <em>is</em> the
+  credential, so only paste links you are willing to store here. One per line.</p>
+  <form method="post" action="/settings">
+    <textarea name="urls" rows="8" {% if not can_write %}disabled{% endif %}
+      placeholder="https://calendar.google.com/calendar/ical/…/public/basic.ics">{{ urls }}</textarea>
+    <button type="submit" {% if not can_write %}disabled{% endif %}>Save feeds</button>
+  </form>
+  {% if not can_write %}
+    <p class="muted">Read-only in demo mode.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

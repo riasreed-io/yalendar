@@ -10,6 +10,7 @@ Run:  .venv/bin/python -m pytest tests -q
 
 from __future__ import annotations
 
+import os
 import re
 
 import pytest
@@ -20,7 +21,7 @@ from yale_today.web import app
 
 client = TestClient(app)
 
-PAGES = ["/", "/week", "/calendar", "/ask", "/sources", "/settings"]
+PAGES = ["/", "/week", "/calendar", "/ask", "/sources", "/settings", "/connect"]
 EVENT_RE = re.compile(r'class="event ')
 
 
@@ -478,6 +479,28 @@ def test_the_agent_imports_without_any_credentials(monkeypatch):
 
 # ----------------------------------------------------------- deploy hygiene
 
+def _dockerignored(path: str) -> bool:
+    """Would Docker skip this path, by any rule in .dockerignore?
+
+    Checking for the literal line is too weak: excluding `data/` covers
+    `data/session_state.json` without naming it, and an earlier version of
+    this test would have demanded the name and failed a safer file. So
+    walk the ancestors the way Docker does.
+    """
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    patterns = [
+        line.strip().rstrip("/")
+        for line in (root / ".dockerignore").read_text().splitlines()
+        if line.strip() and not line.startswith(("#", "!"))
+    ]
+    parts = path.strip("/").split("/")
+    candidates = {"/".join(parts[: i + 1]) for i in range(len(parts))}
+    candidates |= {parts[-1]}
+    return bool(candidates & set(patterns))
+
+
 def test_the_docker_image_cannot_carry_a_live_yale_session():
     """.dockerignore is not .gitignore.
 
@@ -486,37 +509,38 @@ def test_the_docker_image_cannot_carry_a_live_yale_session():
     file shipped without data/session_state.json listed -- a deploy would
     have published a live authenticated CAS/Duo session.
     """
-    from pathlib import Path
-
-    root = Path(__file__).resolve().parent.parent
-    ignored = {
-        line.strip()
-        for line in (root / ".dockerignore").read_text().splitlines()
-        if line.strip() and not line.startswith("#")
-    }
     for secret in [
         ".env",
         "data/session_state.json",
-        "data/browser_profile/",
+        "data/browser_profile/cookies.sqlite",
         "data/dashboard_password.txt",
+        # Not a credential, but private all the same: the personal database
+        # holds members-only club events that are in it only because
+        # somebody signed in.
+        "data/events.db",
     ]:
-        assert secret in ignored, f"{secret} would be copied into the image"
+        assert _dockerignored(secret), f"{secret} would be copied into the image"
 
 
 def test_every_gitignored_secret_is_also_dockerignored():
     from pathlib import Path
 
     root = Path(__file__).resolve().parent.parent
-    docker = (root / ".dockerignore").read_text()
     secretish = ("password", "session_state", "browser_profile", ".env")
     missed = [
         line.strip()
         for line in (root / ".gitignore").read_text().splitlines()
         if line.strip() and not line.startswith("#")
         and any(word in line for word in secretish)
-        and line.strip().rstrip("/") not in docker
+        and not _dockerignored(line.strip())
     ]
     assert not missed, f"secret paths missing from .dockerignore: {missed}"
+
+
+def test_the_snapshot_the_image_does_carry_is_not_excluded():
+    """The flip side: over-broad excludes would ship an empty demo."""
+    assert not _dockerignored("demo/snapshot.json.gz")
+    assert not _dockerignored("prompts/prompt.md")
 
 
 def test_the_image_includes_what_the_agent_reads_at_runtime():
@@ -525,3 +549,279 @@ def test_the_image_includes_what_the_agent_reads_at_runtime():
 
     root = Path(__file__).resolve().parent.parent
     assert "COPY prompts" in (root / "Dockerfile").read_text()
+
+
+# ------------------------------------------------------------- run modes
+#
+# Yalendar started as one person's local tool with one database and one
+# saved Yale session. Sharing it makes that assumption dangerous, so the
+# build announces which of three modes it is in and every path that
+# touches the network, the disk or a credential asks before acting. These
+# tests delete the guards one at a time, in effect, by checking that each
+# refusal is real rather than documented.
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+from yale_today import config
+
+REPO = Path(__file__).resolve().parent.parent
+
+
+def _in_mode(monkeypatch, mode: str):
+    monkeypatch.setattr(config, "MODE", mode)
+
+
+@pytest.mark.parametrize("mode,fetch,write,signin", [
+    ("personal", True, True, True),
+    ("public", True, True, False),
+    ("demo", False, False, False),
+])
+def test_each_mode_allows_exactly_what_it_should(monkeypatch, mode, fetch, write, signin):
+    _in_mode(monkeypatch, mode)
+    assert config.network_allowed() is fetch
+    assert config.writes_allowed() is write
+    assert config.signin_allowed() is signin
+
+
+def test_an_unknown_mode_falls_back_to_the_safest_useful_one():
+    out = subprocess.run(
+        [sys.executable, "-c",
+         "from yale_today.config import MODE; print(MODE)"],
+        cwd=REPO, text=True, capture_output=True,
+        env={**os.environ, "YALENDAR_MODE": "prod-ish"},
+    )
+    assert out.stdout.strip() == "personal", out.stderr
+
+
+def test_demo_mode_cannot_reach_the_network(monkeypatch):
+    """Every outbound request in the app goes through http.client()."""
+    from yale_today.http import OfflineMode, client
+
+    _in_mode(monkeypatch, "demo")
+    with pytest.raises(OfflineMode):
+        client()
+
+
+def test_demo_mode_cannot_ingest(monkeypatch):
+    from yale_today import ingest
+
+    _in_mode(monkeypatch, "demo")
+    with pytest.raises(RuntimeError, match="disabled in demo mode"):
+        ingest.run_ingest()
+
+
+@pytest.mark.parametrize("mode", ["demo", "public"])
+def test_only_your_own_machine_may_hold_a_yale_session(monkeypatch, mode):
+    """A saved session on a shared build would let every visitor browse
+    campus as whoever signed in."""
+    from yale_today import session_login
+
+    _in_mode(monkeypatch, mode)
+    for call in (session_login.interactive_login,
+                 session_login.check_session,
+                 session_login.harvest):
+        with pytest.raises(RuntimeError, match="Signing in is disabled"):
+            call()
+
+
+def test_a_shared_build_refuses_a_signed_in_ingest_loudly(monkeypatch):
+    """Dropping the flag silently would be worse: the run would look
+    successful while omitting half the data."""
+    from yale_today import ingest
+
+    _in_mode(monkeypatch, "public")
+    with pytest.raises(RuntimeError, match="Signed-in ingest is disabled"):
+        ingest.run_ingest(include_connect_login=True)
+
+
+def test_the_connect_page_never_asks_for_a_netid():
+    body = client.get("/connect").text.lower()
+    for field in ('name="password"', 'name="netid"', 'type="password"',
+                  'name="username"'):
+        assert field not in body, field
+    assert "never asks for your netid" in body
+
+
+def test_the_sign_in_route_is_refused_from_a_shared_build(monkeypatch):
+    _in_mode(monkeypatch, "demo")
+    r = client.post("/connect/start", follow_redirects=False)
+    assert r.status_code == 302
+    assert "signin-unavailable" in r.headers["location"]
+
+
+# -------------------------------------------------------- demo snapshot
+
+def test_the_demo_snapshot_exists_and_says_what_it_is():
+    assert config.DEMO_SNAPSHOT.is_file(), "run scripts/make_demo.py --rebuild"
+    meta = json.loads(config.DEMO_META.read_text())
+    assert meta["events"] > 1000
+    assert meta["as_of"] and meta["first_date"] and meta["last_date"]
+
+
+def test_the_demo_snapshot_carries_no_signed_in_data():
+    """It is built by a public-only ingest, so there is nothing to filter.
+    This asserts that stayed true."""
+    from yale_today import demo
+
+    payload = demo.load()
+    assert not [r for r in payload["source_runs"] if r["authenticated"]]
+    # The signed-in harvest is the only thing that fills a venue these two
+    # sources otherwise redact, so its absence should still be visible.
+    assert payload["meta"]["sources"], "snapshot has no sources at all"
+
+
+def test_export_refuses_a_database_that_has_signed_in_pulls(tmp_path):
+    """The guard that stops someone pointing --from at the personal DB."""
+    from yale_today import db as dbmod
+    from yale_today import demo
+
+    path = tmp_path / "events.db"
+    con = dbmod.connect(path)
+    con.close()
+    dbmod.record_source_run("yale_connect", 5, label="signed in",
+                            authenticated=True, path=path)
+    with pytest.raises(RuntimeError, match="signed-in pulls"):
+        demo.export(path, out=tmp_path / "snap.json.gz")
+
+
+def test_a_demo_build_serves_the_snapshot_and_refuses_to_change_it(tmp_path):
+    """End to end, in a real demo-mode process: the pages render, the
+    clock is pinned to the snapshot, and writes bounce."""
+    script = r'''
+import json, os
+from fastapi.testclient import TestClient
+from yale_today.config import MODE, DB_PATH, today_local, demo_meta
+from yale_today.web import app
+c = TestClient(app)
+out = {
+    "mode": MODE,
+    "db": DB_PATH.name,
+    "today": today_local().isoformat(),
+    "as_of": demo_meta()["as_of"][:10],
+    "pages": {p: c.get(p).status_code for p in ("/", "/week", "/calendar", "/sources", "/connect")},
+    "banner": "Demo snapshot" in c.get("/").text,
+    "events_on_day": c.get("/api/events").json().get("count", 0),
+    "refresh": c.post("/refresh", follow_redirects=False).headers.get("location", ""),
+    "settings": c.post("/settings", data={"urls": "https://evil.test/x.ics"},
+                       follow_redirects=False).headers.get("location", ""),
+}
+print(json.dumps(out))
+'''
+    # Serve a copy of the snapshot stamped with a date that is definitely
+    # not today, so "the clock is pinned" cannot pass by coincidence on the
+    # day the snapshot happens to be built.
+    import shutil
+
+    demo_dir = tmp_path / "demo"
+    shutil.copytree(REPO / "demo", demo_dir)
+    meta_path = demo_dir / "snapshot.meta.json"
+    meta = json.loads(meta_path.read_text())
+    meta["as_of"] = "2026-03-15T09:30:00-04:00"
+    meta_path.write_text(json.dumps(meta))
+
+    env = {**os.environ, "YALENDAR_MODE": "demo",
+           "YALE_TODAY_DATA": str(tmp_path),
+           "YALENDAR_DEMO_DIR": str(demo_dir)}
+    proc = subprocess.run([sys.executable, "-c", script], cwd=REPO,
+                          text=True, capture_output=True, env=env)
+    assert proc.returncode == 0, proc.stderr[-3000:]
+    got = json.loads(proc.stdout.strip().splitlines()[-1])
+
+    assert got["mode"] == "demo"
+    assert got["db"] == "demo_events.db", "demo must not open the personal database"
+    assert got["today"] == got["as_of"] == "2026-03-15", \
+        "the clock should follow the snapshot, not the wall clock"
+    assert set(got["pages"].values()) == {200}, got["pages"]
+    assert got["banner"], "a demo build has to say so on every page"
+    assert got["events_on_day"] >= 0
+    assert "demo-frozen" in got["refresh"]
+    assert "demo-frozen" in got["settings"]
+
+
+# ------------------------------------------------ deployment spend ceiling
+#
+# agent.py caps one question at six requests and $0.25. That does nothing
+# about ten thousand questions, each individually within its limit.
+
+def _fresh_budget(monkeypatch, tmp_path, **limits):
+    from yale_today.agent import budget
+
+    monkeypatch.setattr(budget, "USAGE_DB", tmp_path / "usage.db")
+    for name, value in limits.items():
+        monkeypatch.setattr(budget, name, value)
+    return budget
+
+
+def test_a_flood_of_questions_stops_billing(monkeypatch, tmp_path):
+    budget = _fresh_budget(monkeypatch, tmp_path, MAX_QUESTIONS_PER_DAY=3,
+                           MAX_QUESTIONS_PER_IP_PER_HOUR=999)
+    for _ in range(3):
+        assert budget.check("1.2.3.4").ok
+        budget.record("1.2.3.4", {"input_tokens": 3000, "output_tokens": 200})
+    blocked = budget.check("1.2.3.4")
+    assert not blocked.ok
+    assert "daily limit" in blocked.reason
+
+
+def test_the_daily_dollar_ceiling_trips_before_the_question_count(monkeypatch, tmp_path):
+    budget = _fresh_budget(monkeypatch, tmp_path, MAX_QUESTIONS_PER_DAY=10_000,
+                           MAX_COST_PER_DAY_USD=0.01,
+                           MAX_QUESTIONS_PER_IP_PER_HOUR=999)
+    budget.record("1.2.3.4", {"input_tokens": 100_000, "output_tokens": 50_000})
+    blocked = budget.check("1.2.3.4")
+    assert not blocked.ok and "budget" in blocked.reason
+
+
+def test_one_visitor_cannot_use_the_whole_day(monkeypatch, tmp_path):
+    budget = _fresh_budget(monkeypatch, tmp_path, MAX_QUESTIONS_PER_IP_PER_HOUR=2)
+    for _ in range(2):
+        budget.record("9.9.9.9", {"input_tokens": 100})
+    assert not budget.check("9.9.9.9").ok
+    assert budget.check("8.8.8.8").ok, "the cap is per visitor, not global"
+
+
+def test_a_capped_question_still_gets_an_answer(monkeypatch, tmp_path):
+    """A budget ceiling that returns an error page is an outage. Over the
+    line, the free local search answers instead."""
+    from yale_today.agent import budget as bmod
+
+    _fresh_budget(monkeypatch, tmp_path, MAX_QUESTIONS_PER_DAY=0)
+    monkeypatch.setenv("YALENDAR_PUBLIC_AGENT", "1")
+    r = client.post("/api/agent", json={"q": "free food this week"})
+    data = r.json()
+    assert data.get("budget_blocked") is True
+    assert data["engine"] == "local"
+    assert "paused" in data["note"]
+    assert bmod.MAX_QUESTIONS_PER_DAY == 0
+
+
+def test_cost_is_estimated_from_measured_tokens_not_guessed():
+    from yale_today.agent import budget
+
+    cost = budget.estimate_cost(
+        {"input_tokens": 1_000_000, "cache_read_tokens": 0, "output_tokens": 0})
+    assert abs(cost - budget.PRICE_IN) < 1e-9
+    cached = budget.estimate_cost(
+        {"input_tokens": 1_000_000, "cache_read_tokens": 1_000_000, "output_tokens": 0})
+    assert cached < cost, "cached input has to be cheaper than fresh input"
+
+
+# -------------------------------------------------- deploy hygiene (modes)
+
+def test_the_image_carries_no_personal_data_directory_at_all():
+    """Not just the session file: events.db holds members-only club events
+    that exist in it only because somebody signed in."""
+    ignore = (REPO / ".dockerignore").read_text()
+    assert re.search(r"^data/\s*$", ignore, re.M), \
+        ".dockerignore must exclude the whole data/ directory"
+    dockerfile = (REPO / "Dockerfile").read_text()
+    assert "COPY data" not in dockerfile
+    assert "COPY demo ./demo" in dockerfile
+
+
+def test_the_shared_build_defaults_to_demo_mode():
+    assert 'ENV YALENDAR_MODE=demo' in (REPO / "Dockerfile").read_text()
+    assert 'YALENDAR_MODE = "demo"' in (REPO / "fly.toml").read_text()
