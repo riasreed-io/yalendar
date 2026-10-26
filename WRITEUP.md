@@ -3,8 +3,10 @@
 **Rias Reed** · MGT 409 · October 2026
 
 - **Repository:** https://github.com/riasreed-io/yalendar
-- **Live demo:** see the link in the submission (a frozen, public-only build;
-  `YALENDAR_MODE=demo`)
+- **Live demo:** see the link in the submission (a frozen, public-only build)
+- **Or run it yourself in 30 seconds**, with no account, no key and no
+  network — the snapshot is committed:
+  `pip install -r requirements.txt && YALENDAR_MODE=demo python -m yale_today serve`
 
 Yalendar pulls ten Yale and New Haven event calendars into one day/week/month
 view and lets you ask it, in plain English, what is happening.

@@ -953,3 +953,27 @@ def test_markdown_the_model_emits_anyway_does_not_reach_the_bubble():
     # Line breaks and ordinary punctuation are left exactly alone.
     assert _plain("Mon, 6 PM - Dinner\nTue, 7 PM - Talk") == \
         "Mon, 6 PM - Dinner\nTue, 7 PM - Talk"
+
+
+def test_the_container_listens_on_the_port_its_host_assigns():
+    """Render, Railway and Koyeb inject $PORT and scan for a listener on
+    it. A hardcoded port fails their health check and reads as a broken
+    app rather than a wrong flag."""
+    dockerfile = (REPO / "Dockerfile").read_text()
+    cmd = [ln for ln in dockerfile.splitlines() if ln.startswith("CMD")]
+    assert cmd, "no CMD in the Dockerfile"
+    assert "${PORT" in cmd[0], f"CMD ignores $PORT: {cmd[0]}"
+
+
+def test_serve_defaults_to_the_port_in_the_environment(monkeypatch):
+    """The CLI has to agree with the Dockerfile about where PORT comes
+    from, or the container binds 8000 while the host watches 10000."""
+    import uvicorn
+
+    from yale_today import __main__ as cli
+
+    captured = {}
+    monkeypatch.setattr(uvicorn, "run", lambda *a, **kw: captured.update(kw))
+    monkeypatch.setenv("PORT", "10000")
+    cli.main(["serve"])
+    assert captured.get("port") == 10000, captured

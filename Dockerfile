@@ -24,4 +24,8 @@ ENV YALE_TODAY_DATA=/app/data
 ENV YALE_TODAY_HTTPS=1
 EXPOSE 8000
 
-CMD ["python", "-m", "yale_today", "serve", "--host", "0.0.0.0", "--port", "8000"]
+# Honour $PORT. Fly is told internal_port = 8000 and would have worked
+# either way, but Render, Railway and Koyeb inject their own port and scan
+# for a listener on it -- a hardcoded 8000 fails those with "no open ports
+# detected", which looks like a broken app rather than a wrong flag.
+CMD ["sh", "-c", "exec python -m yale_today serve --host 0.0.0.0 --port ${PORT:-8000}"]

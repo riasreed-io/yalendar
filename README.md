@@ -6,6 +6,20 @@ Athletics, and New Haven community calendars into day, week, and month views.
 
 Not an official Yale product. The internal package is still named `yale_today`.
 
+## See it in 30 seconds, with no account
+
+The repository ships a frozen, public-only snapshot of 2,802 real events
+across 9 sources. No Yale login, no API key, no network calls.
+
+```bash
+pip install -r requirements.txt
+YALENDAR_MODE=demo python -m yale_today serve
+```
+
+Open <http://127.0.0.1:8000/>. The clock is pinned to the day the snapshot
+was taken, so every view is populated; a banner on every page says which day
+that is.
+
 ## Three builds, one codebase
 
 Yalendar began as one person's local tool: one SQLite file, one saved Yale
