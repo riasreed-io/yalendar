@@ -19,6 +19,16 @@ COPY demo ./demo
 # "public" gives a live public-sources build instead; "personal" is for
 # your own machine and is refused the moment it would need a session.
 ENV YALENDAR_MODE=demo
+# Ceilings travel with the image, not with one host's config file. fly.toml
+# repeats them, but Render, Railway and anywhere else read nothing but this
+# -- and an image whose spend limits depend on remembering to set five
+# environment variables is an image with no spend limits.
+ENV YALENDAR_PUBLIC_AGENT=1
+ENV YALENDAR_MAX_COST_TOTAL=0.25
+ENV YALENDAR_MAX_QUESTIONS_PER_DAY=60
+ENV YALENDAR_MAX_COST_PER_DAY=0.10
+ENV YALENDAR_MAX_QUESTIONS_PER_HOUR=5
+
 ENV PORT=8000
 ENV YALE_TODAY_DATA=/app/data
 ENV YALE_TODAY_HTTPS=1

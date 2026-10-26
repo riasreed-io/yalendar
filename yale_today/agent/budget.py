@@ -51,8 +51,9 @@ MAX_QUESTIONS_PER_IP_PER_HOUR = int(_limit("YALENDAR_MAX_QUESTIONS_PER_HOUR", 5)
 # charge: $0.10 a day is $36 a year for a project nobody is paying for.
 # This is a total, for the life of the deployment. When it is reached the
 # agent stops costing anything, permanently, until someone raises it on
-# purpose.
-MAX_COST_TOTAL_USD = _limit("YALENDAR_MAX_COST_TOTAL", 1.00)
+# purpose. At the measured $0.00076 a question, 25 cents is roughly 330
+# questions -- the per-day count runs out long before the money does.
+MAX_COST_TOTAL_USD = _limit("YALENDAR_MAX_COST_TOTAL", 0.25)
 
 # Per million tokens, gpt-6-luna at the course rate. Used to estimate what
 # has been spent, so the ceiling degrades safely: if these drift low, the

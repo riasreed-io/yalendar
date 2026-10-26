@@ -977,3 +977,19 @@ def test_serve_defaults_to_the_port_in_the_environment(monkeypatch):
     monkeypatch.setenv("PORT", "10000")
     cli.main(["serve"])
     assert captured.get("port") == 10000, captured
+
+
+def test_the_image_carries_its_own_spend_ceilings():
+    """fly.toml sets these too, but Render and Railway read only the
+    Dockerfile. An image whose limits depend on remembering five
+    environment variables is an image with no limits."""
+    dockerfile = (REPO / "Dockerfile").read_text()
+    for var in ("YALENDAR_MAX_COST_TOTAL", "YALENDAR_MAX_QUESTIONS_PER_DAY",
+                "YALENDAR_MAX_QUESTIONS_PER_HOUR"):
+        assert f"ENV {var}=" in dockerfile, f"{var} is not baked into the image"
+
+    from yale_today.agent import budget
+
+    # And the code default has to be safe on its own, for anyone who runs
+    # it outside the image entirely.
+    assert 0 < budget.MAX_COST_TOTAL_USD <= 1.00
