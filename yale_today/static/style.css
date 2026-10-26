@@ -1144,3 +1144,17 @@ textarea[disabled], button[disabled] { opacity: .5; cursor: not-allowed; }
   outline: none;
   box-shadow: inset 0 0 0 2px rgba(10,48,102,.55);
 }
+
+/* Which engine answered. Small, but it has to be present: the panel falls
+   back to keyword search on no key, no budget or a model error, and an
+   unlabelled fallback reads as the model getting worse. */
+.engine-tag {
+  margin: .35rem 0 0;
+  font-size: .6875rem;
+  letter-spacing: .015em;
+  color: rgba(28,34,48,.52);
+}
+
+/* The model is asked for one event per line; without this the newlines
+   collapse and six events arrive as a single wall of text. */
+.bubble.bot > p { white-space: pre-line; }

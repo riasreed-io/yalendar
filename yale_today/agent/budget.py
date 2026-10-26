@@ -74,6 +74,12 @@ CREATE INDEX IF NOT EXISTS idx_agent_calls_at ON agent_calls(at);
 """
 
 
+def _usd(amount: float) -> str:
+    """Two decimals for real money, four for the tiny values a test uses.
+    A flat :.2f renders a $0.002 ceiling as "$0.00", which reads as a bug."""
+    return f"${amount:.2f}" if amount >= 0.01 else f"${amount:.4f}"
+
+
 @dataclass
 class Allowance:
     ok: bool
@@ -133,14 +139,14 @@ def check(caller: str = "") -> Allowance:
     # Checked first: it is the only limit that bounds the total bill
     # rather than the rate of spending.
     if lifetime >= MAX_COST_TOTAL_USD:
-        return Allowance(False, f"the ${MAX_COST_TOTAL_USD:.2f} total AI budget "
+        return Allowance(False, f"the {_usd(MAX_COST_TOTAL_USD)} total AI budget "
                                 "for this deployment is spent", count, spent,
                                 lifetime)
     if count >= MAX_QUESTIONS_PER_DAY:
         return Allowance(False, f"daily limit of {MAX_QUESTIONS_PER_DAY} "
                                 "AI questions reached", count, spent, lifetime)
     if spent >= MAX_COST_PER_DAY_USD:
-        return Allowance(False, f"daily AI budget of ${MAX_COST_PER_DAY_USD:.2f} "
+        return Allowance(False, f"daily AI budget of {_usd(MAX_COST_PER_DAY_USD)} "
                                 "reached", count, spent, lifetime)
     if caller and from_caller >= MAX_QUESTIONS_PER_IP_PER_HOUR:
         return Allowance(False, f"hourly limit of {MAX_QUESTIONS_PER_IP_PER_HOUR} "

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import threading
 import time
 from datetime import date, datetime, timedelta
@@ -442,12 +443,67 @@ ASK_EXAMPLES = [
 templates.env.globals["ask_examples"] = ASK_EXAMPLES
 
 
-def _ask_payload(question: str) -> dict:
+def _agent_reply(question: str, request: Request | None) -> dict:
+    """The model's answer, or {} if it is not available right now.
+
+    The chat panel used to call the local keyword search and nothing else,
+    so the agent was unreachable from the only interface most people ever
+    see. It now answers here when it can, and the panel says which engine
+    replied -- an assistant that quietly degrades to keyword matching
+    without saying so is worse than one that admits it.
+
+    Everything that can stop it -- no credential, not the site owner,
+    budget spent, model error -- falls through to the free search rather
+    than to an error.
+    """
+    from .api import _agent_allowed
+    from .agent import budget
+    from .agent.agent import credential, run_agent
+
+    if request is None or not _agent_allowed(request):
+        return {}
+    if not credential()[0]:
+        return {}
+
+    caller = (request.client.host if request.client else "") or ""
+    allowance = budget.check(caller)
+    if not allowance.ok:
+        return {"note": f"AI answers are paused: {allowance.reason}."}
+
+    try:
+        result = run_agent(question)
+    except Exception as exc:
+        return {"note": f"{exc.__class__.__name__}: {exc}"[:200]}
+    budget.record(caller, result.get("usage") or {})
+    result["reply"] = _plain(result.get("reply") or "")
+    return result
+
+
+_MD = re.compile(r"(\*\*|__|`)")
+
+
+def _plain(text: str) -> str:
+    """Strip the Markdown the model sometimes emits anyway.
+
+    The prompt asks for plain text because the bubble renders literally,
+    but an instruction is not a guarantee, and `**free food**` on screen
+    reads as a bug. Only the inline emphasis markers are removed -- the
+    words, line breaks and punctuation are left exactly as written.
+    """
+    return _MD.sub("", text)
+
+
+def _ask_payload(question: str, request: Request | None = None) -> dict:
     """Shared by the page and the fetch endpoint so both answer identically."""
     result = assistant.answer(question)
+    agent = _agent_reply(question, request)
     return {
         "question": question,
-        "reply": result.reply,
+        "reply": agent.get("reply") or result.reply,
+        "engine": "agent" if agent.get("reply") else "local",
+        "tools_used": agent.get("tools_used") or [],
+        "note": agent.get("note", ""),
+        "local_reply": result.reply,
         "events": [
             {
                 "title": event.get("title") or "Untitled event",
@@ -471,7 +527,7 @@ def _ask_payload(question: str) -> dict:
 def ask_page(request: Request, q: str | None = None):
     """Chat assistant. Server-renders the first answer so it works without JS."""
     question = (q or "").strip()
-    answer = _ask_payload(question) if question else None
+    answer = _ask_payload(question, request) if question else None
     return templates.TemplateResponse(
         request,
         "ask.html",
@@ -488,8 +544,8 @@ def ask_api(request: Request, q: str = Form("")):
     if not question:
         return {"reply": "Ask me what you're looking for — a day, a topic, or both.",
                 "events": [], "more": 0, "link": "", "link_label": "",
-                "suggestions": ASK_EXAMPLES[:3]}
-    return _ask_payload(question)
+                "suggestions": ASK_EXAMPLES[:3], "engine": "local"}
+    return _ask_payload(question, request)
 
 
 @app.get("/friends", response_class=HTMLResponse)

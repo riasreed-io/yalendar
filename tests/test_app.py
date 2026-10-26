@@ -942,3 +942,14 @@ def test_usage_is_actually_captured_from_a_run():
         got = _usage(result)
         assert got["input_tokens"] == 4408, type(result).__name__
         assert got["output_tokens"] == 430
+
+
+def test_markdown_the_model_emits_anyway_does_not_reach_the_bubble():
+    """The prompt asks for plain text, but an instruction is not a
+    guarantee and `**free food**` on screen reads as a bug."""
+    from yale_today.web import _plain
+
+    assert _plain("**Free food** at `SOM`") == "Free food at SOM"
+    # Line breaks and ordinary punctuation are left exactly alone.
+    assert _plain("Mon, 6 PM - Dinner\nTue, 7 PM - Talk") == \
+        "Mon, 6 PM - Dinner\nTue, 7 PM - Talk"

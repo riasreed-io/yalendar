@@ -148,6 +148,19 @@
     node.textContent = "";
     node.appendChild(el("p", null, data.reply));
 
+    // Say which engine answered. A panel that silently degrades from the
+    // model to keyword matching looks like the model got worse.
+    var tag = el("p", "engine-tag");
+    if (data.engine === "agent") {
+      tag.textContent = "AI assistant"
+        + (data.tools_used && data.tools_used.length
+            ? " · " + data.tools_used.join(", ") : "");
+    } else {
+      tag.textContent = data.note ? "Keyword search · " + data.note
+                                  : "Keyword search";
+    }
+    node.appendChild(tag);
+
     if (data.events && data.events.length) {
       var list = el("ul", "hits");
       data.events.forEach(function (event) {

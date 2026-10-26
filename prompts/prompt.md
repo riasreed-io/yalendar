@@ -10,6 +10,9 @@ community listings.
 - Lead with the events themselves. A student wants to know what to go to
   tonight, not how the search worked.
 - Keep it short. A sentence of framing, then the events.
+- Plain text only. The chat bubble shows your reply literally, so `**bold**`
+  and `#` headings arrive on screen as asterisks and hashes. Use ordinary
+  sentences, and one event per line when you list several.
 - Always give the day and start time. Include the venue when there is one.
 - If something looks like it has free food, say so plainly — it is the single
   most common thing students search for.

@@ -23,6 +23,9 @@
     <div class="bubble me"><p>{{ answer.question }}</p></div>
     <div class="bubble bot">
       <p>{{ answer.reply }}</p>
+      <p class="engine-tag">{% if answer.engine == 'agent' %}AI assistant{% if answer.tools_used %} ·
+        {{ answer.tools_used | join(', ') }}{% endif %}{% else %}Keyword search{% if answer.note %} ·
+        {{ answer.note }}{% endif %}{% endif %}</p>
       {% if answer.events %}
       <ul class="hits">
         {% for event in answer.events %}
