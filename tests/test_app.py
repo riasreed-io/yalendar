@@ -474,3 +474,54 @@ def test_the_agent_imports_without_any_credentials(monkeypatch):
 
     with pytest.raises(RuntimeError, match="OPENAI_API_KEY"):
         build_agent()
+
+
+# ----------------------------------------------------------- deploy hygiene
+
+def test_the_docker_image_cannot_carry_a_live_yale_session():
+    """.dockerignore is not .gitignore.
+
+    Docker does not read .gitignore, so a path that is safely out of the
+    repo can still be copied into the image and pushed to a registry. This
+    file shipped without data/session_state.json listed -- a deploy would
+    have published a live authenticated CAS/Duo session.
+    """
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    ignored = {
+        line.strip()
+        for line in (root / ".dockerignore").read_text().splitlines()
+        if line.strip() and not line.startswith("#")
+    }
+    for secret in [
+        ".env",
+        "data/session_state.json",
+        "data/browser_profile/",
+        "data/dashboard_password.txt",
+    ]:
+        assert secret in ignored, f"{secret} would be copied into the image"
+
+
+def test_every_gitignored_secret_is_also_dockerignored():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    docker = (root / ".dockerignore").read_text()
+    secretish = ("password", "session_state", "browser_profile", ".env")
+    missed = [
+        line.strip()
+        for line in (root / ".gitignore").read_text().splitlines()
+        if line.strip() and not line.startswith("#")
+        and any(word in line for word in secretish)
+        and line.strip().rstrip("/") not in docker
+    ]
+    assert not missed, f"secret paths missing from .dockerignore: {missed}"
+
+
+def test_the_image_includes_what_the_agent_reads_at_runtime():
+    """The prompt is loaded from disk, so it has to be in the image."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    assert "COPY prompts" in (root / "Dockerfile").read_text()

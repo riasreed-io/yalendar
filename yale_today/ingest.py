@@ -207,12 +207,14 @@ def run_ingest(
     report.community = len(kept_community)
     _log("New Haven community", kept_community)
 
-    default_ics = pull("Yale Athletics (ICS)", ics_feeds.fetch_default_ics,
+    default_ics = pull("Built-in ICS feeds", ics_feeds.fetch_default_ics,
                        source="athletics")
     default_ics = keep(default_ics)
     report.ics = len(default_ics)
     collected.extend(default_ics)
-    _log("Yale Athletics (ICS)", default_ics, fallback="athletics")
+    # _log buckets by each event's own source, so athletics and the
+    # residential colleges are recorded separately on the Sources tab.
+    _log("Built-in ICS feeds", default_ics, fallback="athletics")
 
     extra_urls: list[str] = []
     if CONNECT_FEEDS_PATH.exists():

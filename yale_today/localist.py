@@ -17,6 +17,12 @@ LOCALIST_INSTANCES: list[tuple[str, str, str]] = [
     ("localist", "https://events.yale.edu", ""),
     ("localist_jackson", "https://events.jackson.yale.edu",
      "Jackson School of Global Affairs"),
+    # The school's own institutional calendar, separate from both the central
+    # one and from Campus Groups (which is clubs). It carries conferences and
+    # centre programming that appear on neither: 200 events in 60 days, of
+    # which the central calendar had 29.
+    ("localist_som", "https://calendar.som.yale.edu",
+     "School of Management"),
 ]
 
 

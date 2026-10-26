@@ -1,10 +1,46 @@
-.venv
-.git
-__pycache__
-*.pyc
+# Docker does NOT read .gitignore. Anything not listed here is copied into
+# the image and shipped to whatever registry the deploy pushes to, so every
+# secret has to be named twice -- once in .gitignore and once here.
+#
+# This file previously omitted data/session_state.json and
+# data/browser_profile/, which hold a live authenticated Yale CAS/Duo
+# session. A deploy would have published them.
+
+# --- credentials and sessions: never, under any circumstances -------------
+.env
+.env.*
+!.env.example
+data/session_state.json
+data/browser_profile/
 data/dashboard_password.txt
 data/connect_feeds.json
 data/connect_login_status.json
+*.pem
+*.key
+
+# --- local tooling --------------------------------------------------------
+.venv
+.tools
+.git
+.gitignore
+.github
+.claude
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+.DS_Store
+
+# --- build output and scratch --------------------------------------------
 data/*.db-shm
 data/*.db-wal
-.DS_Store
+output/
+frontend/node_modules
+frontend/dist
+node_modules
+
+# --- not needed at runtime ------------------------------------------------
+tests/
+scripts/
+*.md
+!prompts/*.md

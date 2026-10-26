@@ -14,6 +14,12 @@ TZINFO = ZoneInfo(TZ)
 
 DEFAULT_ICS_SOURCES = [
     ("athletics", "https://yalebulldogs.com/calendar.ashx/calendar.ics"),
+    # Residential colleges publish to Google Calendar, not to any Yale
+    # system, so none of their events reach the central calendar: a search
+    # of the whole database found 0 rows mentioning Benjamin Franklin,
+    # Pauli Murray or Timothy Dwight. Each one found gets a line here.
+    ("res_college", "https://calendar.google.com/calendar/ical/"
+                    "benjaminfranklincollege%40gmail.com/public/basic.ics"),
 ]
 
 

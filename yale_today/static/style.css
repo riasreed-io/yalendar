@@ -845,7 +845,8 @@ input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: 
 .src-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .src-table .tiny, .src-table .muted-cell { font-size: .8125rem; color: var(--ink-3); }
 .src-table .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: .5rem; background: var(--src-public); }
-.src-table .dot.yale_connect, .src-table .dot.localist_jackson { background: var(--src-connect); }
+.src-table .dot.yale_connect, .src-table .dot.localist_jackson,
+.src-table .dot.localist_som { background: var(--src-connect); }
 .src-table .dot.campus_groups { background: var(--src-groups); }
 .src-table .dot.nhfpl, .src-table .dot.unh { background: var(--src-community); }
 .badge { display: inline-block; padding: .15rem .55rem; border-radius: var(--pill); font-size: .75rem; font-weight: 600; }
